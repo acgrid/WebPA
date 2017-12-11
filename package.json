@@ -3,17 +3,25 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "node ./bin/www"
+    "start": "nodemon -e js,json,twig,less,jpg,png --ignore src/ ./bin/www"
   },
   "dependencies": {
     "body-parser": "~1.18.2",
     "cookie-parser": "~1.4.3",
     "debug": "~2.6.9",
     "express": "~4.6",
+    "jquery": "^3.2.1",
+    "jsrender": "^v0.9.90",
     "less-middleware": "~2.2.1",
     "morgan": "~1.9.0",
+    "redis": "^2.8.0",
     "serve-favicon": "~2.4.5",
     "socket.io": "^2.0.4",
-    "twig": "~0.10.3"
+    "twig": "~0.10.3",
+    "webpack": "^3.10.0"
+  },
+  "devDependencies": {
+    "webpack-dev-middleware": "^1.12.2",
+    "webpack-hot-middleware": "^2.21.0"
   }
 }

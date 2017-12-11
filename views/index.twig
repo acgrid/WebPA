@@ -3,4 +3,11 @@
 {% block body %}
   <h1>{{title}}</h1>
   <p>Welcome to {{title}}</p>
+    <script defer>
+        const socket = io.connect(location.protocol + '//' + location.host);
+        socket.connect();
+        socket.on('message', function(message) {
+            console.log(message);
+        });
+    </script>
 {% endblock %}
