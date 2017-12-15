@@ -9,6 +9,7 @@ class Console extends Main{
         super('console', plugins, {channel, desktop}, (ev) => {
             ev.emit("console.build");
         });
+        this.windows = new Set();
     }
     get channel(){
         return this.data.channel;
@@ -18,7 +19,10 @@ class Console extends Main{
     }
     start(){
         super.start((ev) => {
-
+            document.addEventListener('jspanelclosed', (event) => {
+                ev.emit('debug', `Window ${event.detail} is closed`);
+                this.windows.delete(event.detail);
+            });
         });
     }
     stop(){
@@ -32,6 +36,14 @@ class Console extends Main{
     }
     createWindow(params){
         return jsPanel.create(params);
+    }
+    openWindow(name, params){
+        if(this.windows.has(name)) return; // created already
+        if(typeof params === "function") params = params() || null;
+        if(!params) return;
+        params.id = name;
+        this.windows.add(name);
+        return this.createWindow(params);
     }
 }
 module.exports = Console;
