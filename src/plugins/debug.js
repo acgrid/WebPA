@@ -4,6 +4,9 @@ class Debug extends Plugin{
         return 'debug';
     }
     init(type, main, ev){
+        ev.on('plugin.bridge.entered', () => {
+            ev.emit("debug", "Bridge connected and entered.");
+        });
         if(type === 'console'){
             const $dom = $('<textarea class="full"></textarea>'), onClick = () => {
                 if(!this.active){

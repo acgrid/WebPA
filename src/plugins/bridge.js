@@ -1,10 +1,13 @@
 const io = require('socket.io-client'),
     Plugin = require('./base');
 class Bridge extends Plugin{
-    constructor(options){
+    constructor(options = {}){
         super();
         options.autoConnect = false;
         this.socket = io(location.protocol + '//' + location.host, options);
+    }
+    static name(){
+        return 'bridge';
     }
     init(role, main, ev){
         const socket = this.socket;
@@ -27,7 +30,7 @@ class Bridge extends Plugin{
         socket.on("error", errorHandler);
         socket.on("connect", () => {
             ev.emit('plugin.bridge.socket.opened', this);
-            emit('enter', {role, channel: main.channel}, (error) => {
+            socket.emit('enter', {role, channel: main.channel}, (error) => {
                 if(error){
                     ev.em('plugin.bridge.socket.error', error);
                 }else{
@@ -37,7 +40,7 @@ class Bridge extends Plugin{
         });
         socket.on("disconnect", (reason) => {
             if(stopping){
-                ev.emit('plugin.bridge.exited', this);
+                ev.emit('plugin.bridge.exited', this, reason);
             }
         });
         if(role === 'console'){
@@ -57,7 +60,7 @@ class Bridge extends Plugin{
         });
         ev.on("*.stopping", function(){
             ev.emit('plugin.bridge.exiting', this);
-            emit('exit', () => {
+            socket.emit('exit', () => {
                 socket.close();
                 ev.emit('plugin.bridge.exited', this);
             });

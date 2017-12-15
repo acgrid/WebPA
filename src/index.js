@@ -3,6 +3,7 @@ if(!window) throw new Error('I am not in a browser!');
 const Monitor = require('./lib/monitor'),
     Console = require('./lib/console'),
     Sandbox = require('./lib/sandbox'),
+    Bridge = require('./plugins/bridge'),
     DOM = require('./plugins/dom'),
     $ = require('jquery');
 
@@ -10,6 +11,7 @@ $(function(){
     const $body = $("body"),
         channel = $body.data("channel") || 'default',
         plugins = [
+            new Bridge(),
             new DOM('test', (layer) => {
                 if(typeof layer === "number") return $(`<div>Layer ${layer}</div>`);
             })
