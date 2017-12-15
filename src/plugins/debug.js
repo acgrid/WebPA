@@ -4,9 +4,6 @@ class Debug extends Plugin{
         return 'debug';
     }
     init(type, main, ev){
-        ev.on('plugin.bridge.entered', () => {
-            ev.emit("debug", "Bridge connected and entered.");
-        });
         if(type === 'console'){
             const $dom = $('<textarea class="full"></textarea>'), onClick = () => {
                 if(!this.active){
@@ -25,8 +22,9 @@ class Debug extends Plugin{
                     });
                 }
             };
-            ev.on("debug", function(...args){
-                $dom.val(JSON.stringify(args) + "\n" + $dom.val());
+            this.registerInterests(ev);
+            ev.on("debug", function(info){
+                $dom.val(info + "\n" + $dom.val());
             });
             this.main = main;
             this.active = false;
@@ -37,10 +35,18 @@ class Debug extends Plugin{
                 return $icon;
             });
         }else{
-            ev.on("debug", function(...args){
+            ev.on("**", function(...args){
                 console.debug(...args);
             });
         }
+    }
+    registerInterests(ev){
+        ev.on('plugin.bridge.entered', () => {
+            ev.emit("debug", "Bridge connected and entered.");
+        });
+        ev.on('console.started', () => {
+            ev.emit("debug", "Console starting sequence completed");
+        });
     }
 }
 module.exports = Debug;
