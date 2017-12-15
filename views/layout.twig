@@ -2,10 +2,12 @@
 <html>
   <head>
     <title>{{ title }}</title>
-    <link rel='stylesheet' href='/stylesheets/style.css' />
+      {% block head %}{% endblock %}
+    <link rel="stylesheet" href="/stylesheets/style.css" />
   </head>
-  <body class="{% block bodyClass %}{% endblock %}" data-channel="{{ channel }}">
+  <body class="{% block bodyClass %}hidden{% endblock %}" data-role="{{ role }}" data-channel="{{ channel }}" data-debug="{{ debug }}">
     {% block body %}{% endblock %}
+    <script src="/js/vendor.js"></script>
+    <script src="/js/app.js"></script>
   </body>
-  <script src="/js/{{ block('bodyClass') }}.bundle.js"></script>
 </html>

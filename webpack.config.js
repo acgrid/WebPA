@@ -1,15 +1,17 @@
 const webpack = require('webpack'),
-     path = require('path');
-
-let entry = {
-    console: ['./src/console.js'],
-    monitor: ['./src/monitor.js'],
-};
+    path = require('path'),
+    plugins = [new webpack.optimize.CommonsChunkPlugin({
+        name: 'vendor',
+        minChunks: function (module) {
+            // this assumes your vendor imports exist in the node_modules directory
+            return module.context && module.context.includes("node_modules");
+        }
+    })],
+    entry = {app: ['./src/index.js']};
 
 if(process.env.NODE_ENV !== 'production'){
-    for(let entryName in entry){
-        entry[entryName].push('webpack-hot-middleware/client');
-    }
+    entry.app.push('webpack-hot-middleware/client');
+    plugins.push(new webpack.HotModuleReplacementPlugin());
 }
 
 module.exports = {
@@ -19,14 +21,5 @@ module.exports = {
         filename: '[name].js',
         publicPath: '/js',
     },
-    plugins: [
-        new webpack.HotModuleReplacementPlugin(),
-        new webpack.optimize.CommonsChunkPlugin({
-            name: 'vendor',
-            minChunks: function (module) {
-                // this assumes your vendor imports exist in the node_modules directory
-                return module.context && module.context.includes("node_modules");
-            }
-        }),
-    ]
+    plugins
 };

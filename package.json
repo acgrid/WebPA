@@ -3,14 +3,14 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "nodemon -e js,json,twig,less,jpg,png --ignore src/ ./bin/www"
+    "start": "nodemon -e js,json,twig,jpg,png --ignore src/ ./bin/www"
   },
   "dependencies": {
     "body-parser": "~1.18.2",
     "config": "^1.28.1",
     "cookie-parser": "~1.4.3",
     "debug": "~2.6.9",
-    "event-wire": "^3.4.0",
+    "eventemitter2": "^5.0.0",
     "express": "~4.6",
     "jquery": "^3.2.1",
     "jspanel4": "^4.0.0-beta.1",
