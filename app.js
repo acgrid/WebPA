@@ -51,6 +51,16 @@ app.use(function(req, res, next){
 });
 app.use('/console', require('./routes/console'));
 app.use('/monitor', require('./routes/monitor'));
+app.use('/media/:channel', (req, res) => {
+    const http = config.get('media').http, channel = req.param('channel', 'default');
+    require('./lib/media').list(channel).then((files) => {
+        res.json({prefix: `${http.scheme}://${req.hostname}:${http.port}${http.path}${channel}/`, files});
+    }).catch((err) => {
+        const debug = require('debug')('webpa:media');
+        debug(err);
+        res.json([]);
+    });
+});
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
