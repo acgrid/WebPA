@@ -34,7 +34,7 @@ class Background extends DOM{
                 const url = data.url || "";
                 this.$url.val(url);
                 Storage.set(STORAGE_BACKGROUND_URL, url);
-                event.emit(EVENT_SANDBOX_UPDATE_URL, {url});
+                event.emit(EVENT_SANDBOX_UPDATE_URL, data);
             });
             event.on("console.build", () => {
                 main.createIcon(($icon) => {
@@ -55,8 +55,8 @@ class Background extends DOM{
             this.setUrl(this.url);
         }
     }
-    setUrl(url){
-        this.event.emit(EVENT_GLOBAL_UPDATE_URL, {url});
+    setUrl(url, initial = true){
+        this.event.emit(EVENT_GLOBAL_UPDATE_URL, {url, initial});
     }
 }
 

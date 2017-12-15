@@ -17,8 +17,16 @@ class Bridge extends Plugin{
         }, emit = (name, params) => {
             socket.emit(name, params);
         }, forward = function(params = {}){
-            const name = this.event;
-            emit(name.substr(0, name.indexOf('.')), {name, params});
+            const name = this.event, type = name.substr(0, name.indexOf('.'));
+            if(type === 'sandbox'){
+                if(params.initial){
+                    delete params.initial;
+                }else{
+                    return;
+                }
+            }
+            ev.emit("debug", `forward event ${name} as type ${type}, params ${JSON.stringify(params)}`);
+            emit(type, {name, params});
         }, errorHandler = (error) => {
             ev.emit('plugin.bridge.socket.error', error);
         }, timeoutHandler = (timeout) => {
