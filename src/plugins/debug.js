@@ -22,8 +22,8 @@ class Debug extends Plugin{
                     });
                 }
             };
-            ev.on("**", function(...args){
-                $dom.val(this.event + ": " + JSON.stringify(args) + "\n" + $dom.val());
+            ev.on("debug", function(...args){
+                $dom.val(JSON.stringify(args) + "\n" + $dom.val());
             });
             this.main = main;
             this.active = false;
@@ -34,8 +34,8 @@ class Debug extends Plugin{
                 return $icon;
             });
         }else{
-            ev.on("**", function(...args){
-                console.debug(this.event, ...args);
+            ev.on("debug", function(...args){
+                console.debug(...args);
             });
         }
     }
