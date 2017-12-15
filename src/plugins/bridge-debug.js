@@ -1,4 +1,5 @@
 const Plugin = require('./base');
+
 class BridgeDebug extends Plugin{
     constructor(bridge, debug){
         super();
