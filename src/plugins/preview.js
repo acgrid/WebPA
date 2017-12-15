@@ -32,7 +32,7 @@ class Preview extends Plugin{
                     $icon.find("i").addClass("fa-tv");
                     $icon.find("p").text("预览设置");
                     $icon.click(() => {
-                        main.openWindow('preview-setup', this.setupWindow.bind(this));
+                        main.openWindow('preview-setup', this.setupWindow.bind(this, event));
                     });
                     return $icon;
                 });
@@ -42,10 +42,11 @@ class Preview extends Plugin{
             });
         }
     }
-    setupWindow(){
+    setupWindow(event){
         const $form = $('<form id="preview-setup"></form>');
         $form.append($(`<input type="checkbox" id="preview-setup-mute" /><label for="preview-setup-mute">视频静音</label>`).attr("checked", !!Storage.get("preview.muted")).on("change", function(){
             Storage.set("preview.muted", this.checked);
+            event.emit('sandbox.video.configure', {muted: this.checked})
         }));
         return {
             theme:       'primary',
