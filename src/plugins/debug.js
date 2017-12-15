@@ -5,7 +5,7 @@ class Debug extends Plugin{
     }
     init(type, main, ev){
         if(type === 'console'){
-            const $dom = $('<textarea style="width: 100%; height: 100%"></textarea>'), onClick = () => {
+            const $dom = $('<textarea class="full"></textarea>'), onClick = () => {
                 if(!this.active){
                     this.main.createWindow({
                         theme:       'primary',

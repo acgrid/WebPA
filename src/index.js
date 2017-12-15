@@ -10,10 +10,10 @@ $(function(){
         channel = $body.data("channel") || 'default',
         plugins = [
             // add & configure features here
-        ];
+        ], debug = !!$body.data("debug");
     let role = $body.data('role'), main;
     // plugin dependencies are explicit via constructor
-    if($body.data("debug")){
+    if(debug){
         const Debug = require('./plugins/debug');
         plugins.push(new Debug());
     }
