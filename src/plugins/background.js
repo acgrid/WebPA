@@ -23,7 +23,7 @@ class Background extends DOM{
             this.$dom.css("background-image", data.url ? `url(${data.url})` : "");
         });
         if(type === 'console'){
-            this.url = Storage.get(STORAGE_BACKGROUND_URL, 'http://127.0.0.1:8080/mylive2017/KV.png');
+            this.url = Storage.get(STORAGE_BACKGROUND_URL, `http://127.0.0.1:8080/${main.channel}/KV.png`);
             this.$form = $(`<form><input type="url" class="block" id="background-image-url" /><button>设定</button></form>`);
             this.$url = this.$form.find("input");
             this.$form.find("button").click((ev) => {
@@ -41,7 +41,7 @@ class Background extends DOM{
                     $icon.find("i").addClass("fa-image");
                     $icon.find("p").text("背景图片");
                     $icon.click(() => {
-                        main.openWindow('background', {
+                        main.openWindow('background-setup', {
                             theme:       'primary',
                             headerTitle: '背景图片',
                             position:    'center-top 0 30',
