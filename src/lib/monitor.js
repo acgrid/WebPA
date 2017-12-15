@@ -17,7 +17,7 @@ const $ = require('jquery'),
 class Monitor extends Main{
     constructor(channel, sandbox, plugins = []){
         super('monitor', plugins, {channel, sandbox}, (ev) => {
-            // init here
+
         });
     }
     get channel(){
@@ -28,7 +28,7 @@ class Monitor extends Main{
     }
     start(){
         super.start((ev) => {
-            //
+            ev.emit("sandbox.create", this.data.sandbox);
         });
     }
     stop(){

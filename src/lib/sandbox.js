@@ -3,6 +3,9 @@ const $ = require('jquery'),
     layerStacks = new WeakMap(),
     options = new WeakMap(),
     containers = new WeakMap();
+
+const $layer = $(`<div class="layer"></div>`);
+
 class Sandbox{
     constructor($container, option = {}){
         if(!($container instanceof $)) $container = $($container);
@@ -10,6 +13,9 @@ class Sandbox{
         options.set(this, option);
         layers.set(this, {});
         layerStacks.set(this, []);
+    }
+    get container(){
+        return containers.get(this);
     }
     get layers(){
         return layers.get(this);
@@ -27,11 +33,12 @@ class Sandbox{
         if(typeof factory !== 'function') throw new Error('Layer factory shall be a function');
         let layer = this.get(layerName);
         if(layer === null){
-            let index = this.stack.length;
+            let index = this.stack.length, $container = $layer.clone().attr("id", layerName).css('z-index', index);
             layer = factory(index);
-            if(!(layer instanceof $)) layer = $(`<div class="layer" id="${layerName}"></div>`).css('z-index', index);
-            this.layers[layerName] = layer;
-            this.stack.push(layer);
+            if(layer instanceof $) $container.append(layer);
+            this.layers[layerName] = $container;
+            this.stack.push($container);
+            this.container.append($container);
         }else{
             factory(layer);
         }

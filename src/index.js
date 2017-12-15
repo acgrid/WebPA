@@ -3,13 +3,16 @@ if(!window) throw new Error('I am not in a browser!');
 const Monitor = require('./lib/monitor'),
     Console = require('./lib/console'),
     Sandbox = require('./lib/sandbox'),
+    DOM = require('./plugins/dom'),
     $ = require('jquery');
 
 $(function(){
     const $body = $("body"),
         channel = $body.data("channel") || 'default',
         plugins = [
-            // add & configure features here
+            new DOM('test', (layer) => {
+                if(typeof layer === "number") return $(`<div>Layer ${layer}</div>`);
+            })
         ], debug = !!$body.data("debug");
     let role = $body.data('role'), main;
     // plugin dependencies are explicit via constructor
@@ -26,7 +29,7 @@ $(function(){
             main = new Console(channel, $('.desktop-container'), plugins);
             break;
         case 'monitor':
-            const sandbox = new Sandbox($('.sandbox-container'), {preview: false});
+            const sandbox = new Sandbox($('.sandbox'), {preview: false});
             main = new Monitor(channel, sandbox, plugins);
             break;
         default:

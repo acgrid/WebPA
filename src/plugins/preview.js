@@ -8,7 +8,7 @@ class Preview extends Plugin{
     init(type, main, event){
         if(type === 'console'){
             this.main = main;
-            this.sandbox = new Sandbox($(`<div class="sandbox-container"></div>`), {preview: true});
+            this.sandbox = new Sandbox($(`<div class="sandbox"></div>`), {preview: true});
             // register stuff
             event.on("console.build", () => {
                 main.createIcon(($icon) => {
@@ -16,6 +16,9 @@ class Preview extends Plugin{
                     $icon.find("p").text("预览窗口");
                     return $icon;
                 });
+            });
+            event.on("console.starting", () => {
+                event.emit("sandbox.create", this.sandbox);
             });
         }
     }
