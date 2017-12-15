@@ -11,6 +11,12 @@ body {
   display: block;
   width: 100%;
 }
+.hidden{
+  display: none;
+}
+.text-center{
+  text-align: center;
+}
 .desktop-container{
   background: #66ccff;
   position: absolute;
@@ -26,10 +32,19 @@ body {
       color: orangered;
     }
     p{
-      color: white;
-      text-shadow: #bbb 2px 2px 1px;
+      color: orangered;
+      text-shadow: #bbb 2px 2px 2px;
       font-size: 1.5em;
     }
+  }
+  &:after{
+    position: absolute;
+    bottom: 2em;
+    left: 1em;
+    content: "WebPA Intergated";
+    text-shadow: #bbb 2px 2px 2px;
+    font-size: 5em;
+    color: orangered;
   }
 }
 .sandbox{
@@ -49,4 +64,12 @@ body {
 .background{
   background: black center center no-repeat;
   background-size: contain;
+}
+.video-player{
+  button{
+    margin: 0.5em 0.5em 0.5em 0;
+  }
+  button:last-child{
+    margin-right: 0;
+  }
 }
