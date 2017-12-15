@@ -1,7 +1,7 @@
 const DOM = require('./dom'),
     $ = require('jquery'),
     Storage = require('../lib/storage');
-const EVENT_GLOBAL_UPDATE_URL = "console.global.plugin.background.update",
+const EVENT_GLOBAL_UPDATE_URL = "global.plugin.background.update",
     EVENT_SANDBOX_UPDATE_URL = "sandbox.background.image.update",
     STORAGE_BACKGROUND_URL = "plugin.background.url";
 
@@ -25,14 +25,14 @@ class Background extends DOM{
         if(type === 'console'){
             this.url = Storage.get(STORAGE_BACKGROUND_URL, 'http://127.0.0.1:8080/mylive2017/KV.png');
             this.$form = $(`<form><input type="url" class="block" id="background-image-url" /><button>设定</button></form>`);
-            this.$input = this.$form.find("input");
+            this.$url = this.$form.find("input");
             this.$form.find("button").click((ev) => {
                 ev.preventDefault();
-                this.setUrl(this.$input.val());
+                this.setUrl(this.$url.val());
             });
             event.on(EVENT_GLOBAL_UPDATE_URL, (data) => {
                 const url = data.url || "";
-                this.$input.val(url);
+                this.$url.val(url);
                 Storage.set(STORAGE_BACKGROUND_URL, url);
                 event.emit(EVENT_SANDBOX_UPDATE_URL, {url});
             });
@@ -41,7 +41,7 @@ class Background extends DOM{
                     $icon.find("i").addClass("fa-image");
                     $icon.find("p").text("背景图片");
                     $icon.click(() => {
-                        main.openWindow('preview-setup', {
+                        main.openWindow('background', {
                             theme:       'primary',
                             headerTitle: '背景图片',
                             position:    'center-top 0 30',
