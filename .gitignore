@@ -1,2 +1,4 @@
 /.idea
 /node_modules
+/public/js/app.js
+/public/js/vendor.js
