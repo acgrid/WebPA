@@ -63,6 +63,7 @@ class VideoPlayer extends DOMPlugin{
         event.on(EVENT_SANDBOX_VIDEO_STOP, () => {
             this.$video.addClass("hidden");
             this.video.pause();
+            this.video.currentTime = 0;
         });
         event.on(EVENT_SANDBOX_VIDEO_SEEK, (data) => {
             if(data.time) this.video.currentTime = data.time;
