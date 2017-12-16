@@ -32,7 +32,7 @@ class Debug extends Plugin{
             });
         }else{
             ev.on("**", function(...args){
-                console.debug(...args);
+                console.debug(this.event, ...args);
             });
         }
     }
