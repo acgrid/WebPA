@@ -1,7 +1,12 @@
 const Plugin = require('./base'),
-    Sandbox = require('../lib/sandbox');
-    Storage = require('../lib/storage');
+    Sandbox = require('../lib/sandbox'),
+    Storage = require('../lib/storage'),
     $ = require('jquery');
+
+function getSetMuted(bool){
+    if(typeof bool === "undefined") return !!Storage.get("preview.muted");
+    Storage.set("preview.muted", bool);
+}
 class Preview extends Plugin{
     static name(){
         return 'preview';
@@ -39,14 +44,15 @@ class Preview extends Plugin{
             });
             event.on("console.starting", () => {
                 event.emit("sandbox.create", this.sandbox);
+                event.emit('global.plugin.video.configure', {muted: getSetMuted()});
             });
         }
     }
     setupWindow(event){
         const $form = $('<form id="preview-setup"></form>');
-        $form.append($(`<input type="checkbox" id="preview-setup-mute" /><label for="preview-setup-mute">视频静音</label>`).attr("checked", !!Storage.get("preview.muted")).on("change", function(){
-            Storage.set("preview.muted", this.checked);
-            event.emit('sandbox.video.configure', {muted: this.checked})
+        $form.append($(`<input type="checkbox" id="preview-setup-mute" /><label for="preview-setup-mute">视频静音</label>`).attr("checked", getSetMuted()).on("change", function(){
+            getSetMuted(this.checked);
+            event.emit('global.plugin.video.configure', {muted: this.checked});
         }));
         return {
             theme:       'primary',

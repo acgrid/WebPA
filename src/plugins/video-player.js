@@ -10,6 +10,7 @@ const EVENT_SANDBOX_VIDEO_CONFIGURE = 'sandbox.video.configure',
     EVENT_SANDBOX_VIDEO_STOP = 'sandbox.video.stop',
     EVENT_SANDBOX_VIDEO_SEEK = 'sandbox.video.seek',
 
+    EVENT_GLOBAL_VIDEO_LOCAL_CONFIGURE = 'global.plugin.video.configure',
     EVENT_GLOBAL_VIDEO_OPEN = 'global.plugin.video.open',
     EVENT_GLOBAL_VIDEO_PLAY = 'global.plugin.video.play',
     EVENT_GLOBAL_VIDEO_PAUSE = 'global.plugin.video.pause',
@@ -37,15 +38,16 @@ class VideoPlayer extends DOMPlugin{
     createDOM(){
         return this.$video;
     }
+    setVideoProps(props){
+        this.$video.prop(props);
+    }
     myInit(type, main, event){
         this.event = event;
         this.$video.on("ended", () => {
             this.$video.addClass("hidden");
         });
         // SANDBOX
-        event.on(EVENT_SANDBOX_VIDEO_CONFIGURE, (props) => {
-            this.$video.prop(props);
-        });
+        event.on(EVENT_SANDBOX_VIDEO_CONFIGURE, this.setVideoProps.bind(this));
         event.on(EVENT_SANDBOX_VIDEO_OPEN, (data) => {
             this.$video.addClass("hidden");
             if(data.url) this.$video.prop("src", data.url);
@@ -65,6 +67,7 @@ class VideoPlayer extends DOMPlugin{
             if(data.time) this.video.currentTime = data.time;
         });
         if(type === 'console'){
+            event.on(EVENT_GLOBAL_VIDEO_LOCAL_CONFIGURE, this.setVideoProps.bind(this));
             this.$player = $(`<div class="video-player"><input type="url" class="block" id="video-url" placeholder="视频URL" />
 <p class="text-center">
 <button id="video-open"><i class="fa fa-2x fa-fw fa-folder-open"></i></button>
