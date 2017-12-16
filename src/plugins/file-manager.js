@@ -17,7 +17,6 @@ module.exports = class FileManager extends Plugin{
 <p class="text-center"><button id="file-manager-refresh">刷新</button></p>
 <table class="scroll">
 <thead>
-<tr><th>?</th><th>文件名</th><th>使用</th></tr>
 </thead>
 <tbody></tbody>
 </table>

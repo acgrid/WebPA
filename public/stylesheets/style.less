@@ -122,14 +122,13 @@ body {
   }
 }
 table.scroll{
-  width: 100%;
+  &,tr{
+    width: 100%;
+  }
   thead,tbody{
     display: block;
   }
   tbody{
     overflow-y: auto;
-  }
-  td,th{
-    table-layout: fixed;
   }
 }
