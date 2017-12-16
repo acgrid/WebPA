@@ -5,6 +5,8 @@ const Plugin = require('./base'),
 // Console ONLY. I have nothing to do with any sandboxes!
 // global.* events are not used!
 
+const EVENT_FB2K_PLAY_REQUEST = 'plugin.fb2k.play.request';
+
 function request(cmd = '', data = {}) {
     return $.ajax({
         url: `/fb2k/${cmd}`,
@@ -36,8 +38,8 @@ module.exports = class FB2K extends Plugin{
 <label for="fb2k-volume">音量</label><input type="number" id="fb2k-volume" min="0" max="100" />
 </p>
 <p class="text-center">
-<button id="fb2k-play"><i class="fa fa-2x fa-fw fa-play"></i></button>
-<button id="fb2k-pause"><i class="fa fa-2x fa-fw fa-pause"></i></button>
+<button id="fb2k-play"><i class="fa fa-2x fa-fw fa-folder-open"></i></button>
+<button id="fb2k-pause"><i class="fa fa-2x fa-fw fa-play"></i><i class="fa fa-2x fa-fw fa-pause"></i></button>
 <button id="fb2k-stop"><i class="fa fa-2x fa-fw fa-stop"></i></button>
 </p>
 <p class="text-center">
@@ -69,6 +71,9 @@ module.exports = class FB2K extends Plugin{
             this.$play.click(() => {
                 let list = parseInt(this.$list.val()), track = parseInt(this.$track.val());
                 if(isNaN(list) || isNaN(track)) return;
+                event.emit(EVENT_FB2K_PLAY_REQUEST, list, track)
+            });
+            event.on(EVENT_FB2K_PLAY_REQUEST, (list, track) => {
                 request('play', {list, track}).then(() => {
                     this.$list.val("");
                     this.$track.val("");
