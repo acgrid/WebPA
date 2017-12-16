@@ -44,15 +44,18 @@ class Preview extends Plugin{
             });
             event.on("console.starting", () => {
                 event.emit("sandbox.create", this.sandbox);
-                event.emit('global.plugin.video.configure', {muted: getSetMuted()});
+                const muted = getSetMuted();
+                event.emit('global.plugin.video.configure', {muted});
+                event.emit('global.plugin.audio.configure', {muted});
             });
         }
     }
     setupWindow(event){
         const $form = $('<form id="preview-setup"></form>');
-        $form.append($(`<input type="checkbox" id="preview-setup-mute" /><label for="preview-setup-mute">视频静音</label>`).attr("checked", getSetMuted()).on("change", function(){
+        $form.append($(`<input type="checkbox" id="preview-setup-mute" /><label for="preview-setup-mute">本地静音</label>`).attr("checked", getSetMuted()).on("change", function(){
             getSetMuted(this.checked);
             event.emit('global.plugin.video.configure', {muted: this.checked});
+            event.emit('global.plugin.audio.configure', {muted: this.checked});
         }));
         return {
             theme:       'primary',
