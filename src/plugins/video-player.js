@@ -27,6 +27,10 @@ const EVENT_SANDBOX_VIDEO_CONFIGURE = 'sandbox.video.configure',
     EVENT_MONITOR_VIDEO_SEEKED = 'promise.plugin.video.seeked'
 ;
 
+function setFileIcon($icon){
+    $icon.removeClass("fa-file").addClass("fa-file-video");
+}
+
 class VideoPlayer extends DOMPlugin{
     static name(){
         return 'video';
@@ -95,6 +99,7 @@ class VideoPlayer extends DOMPlugin{
                 this.$url.val(url);
                 this.$controls.prop("disabled", true);
                 event.emit(EVENT_SANDBOX_VIDEO_OPEN, data);
+                this.play();
             });
             this.$video.on("canplay", (ev) => {
                 this.$controls.prop("disabled", false);
@@ -154,6 +159,11 @@ class VideoPlayer extends DOMPlugin{
             this.$video.on("seeked", (ev) => {
                 event.emit(EVENT_MONITOR_VIDEO_SEEKED, ev);
             });
+            // REGISTER
+            ['mp4', 'mpg', 'ogg'].forEach((extension) => {
+                event.on(`plugin.file.icon.${extension}`, setFileIcon);
+                event.on(`plugin.file.operation.${extension}`, this.setFileOperation.bind(this));
+            });
             // UI
             event.on("console.build", () => {
                 main.createIcon(($icon) => {
@@ -187,6 +197,14 @@ class VideoPlayer extends DOMPlugin{
     }
     seek(time, initial = true){
         this.event.emit(EVENT_GLOBAL_VIDEO_SEEK, {time, initial});
+    }
+    setUrlFromDOM(ev){
+        this.open($(ev.target).closest(".file-entry").data("url"));
+    }
+    setFileOperation($cell){
+        const $button = $('<button>播放</button>');
+        $button.click(this.setUrlFromDOM.bind(this));
+        $cell.append($button);
     }
 }
 

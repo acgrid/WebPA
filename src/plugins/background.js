@@ -5,6 +5,14 @@ const EVENT_GLOBAL_UPDATE_URL = "global.plugin.background.update",
     EVENT_SANDBOX_UPDATE_URL = "sandbox.background.image.update",
     STORAGE_BACKGROUND_URL = "plugin.background.url";
 
+const FileType = /png|jpe?g|gif/;
+
+function setFileIcon($icon, extension){
+    if(FileType.test(extension)){
+        $icon.removeClass("fa-file").addClass("fa-file-image");
+    }
+}
+
 class Background extends DOM{
     static name(){
         return 'background';
@@ -36,6 +44,9 @@ class Background extends DOM{
                 Storage.set(STORAGE_BACKGROUND_URL, url);
                 event.emit(EVENT_SANDBOX_UPDATE_URL, data);
             });
+            // Register processor
+            event.on("plugin.file.icon.*", setFileIcon);
+            event.on("plugin.file.operation.*", this.setFileOperation.bind(this));
             event.on("console.build", () => {
                 main.createIcon(($icon) => {
                     $icon.find("i").addClass("fa-image");
@@ -57,6 +68,16 @@ class Background extends DOM{
     }
     setUrl(url, initial = true){
         this.event.emit(EVENT_GLOBAL_UPDATE_URL, {url, initial});
+    }
+    setUrlFromDOM(ev){
+        this.setUrl($(ev.target).closest(".file-entry").data("url"));
+    }
+    setFileOperation($cell, extension){
+        if(FileType.test(extension)){
+            const $button = $('<button>设置背景</button>');
+            $button.click(this.setUrlFromDOM.bind(this));
+            $cell.append($button);
+        }
     }
 }
 

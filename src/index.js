@@ -7,6 +7,7 @@ const Monitor = require('./lib/monitor'),
     Background = require('./plugins/background'),
     VideoPlayer = require('./plugins/video-player'),
     FB2K = require('./plugins/fb2k'),
+    MediaManager = require('./plugins/file-manager');
     $ = require('jquery');
 
 $(function(){
@@ -17,6 +18,7 @@ $(function(){
             new Background(),
             new VideoPlayer(),
             new FB2K(),
+            new MediaManager(),
         ], debug = !!$body.data("debug");
     let role = $body.data('role'), main;
     // plugin dependencies are explicit via constructor
