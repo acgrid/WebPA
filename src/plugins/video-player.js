@@ -212,6 +212,7 @@ class VideoPlayer extends DOMPlugin{
         this.event.emit(EVENT_GLOBAL_VIDEO_SEEK, {time, initial});
     }
     setUrlFromDOM(ev){
+        this.event.emit('global.plugin.audio.stop', {initial: true});
         this.open($(ev.target).closest(".file-entry").data("url"));
     }
     setFileOperation($cell){

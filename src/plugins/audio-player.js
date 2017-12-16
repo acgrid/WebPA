@@ -178,7 +178,7 @@ class AudioPlayer extends DOMPlugin{
                         main.openWindow('audio-player', {
                             theme:       'info',
                             headerTitle: '音频播放',
-                            position:    'center-top 0 30',
+                            position:    'right-top 0 30',
                             contentSize: '640 300',
                             content:     this.$player.get(0)
                         });
@@ -210,6 +210,7 @@ class AudioPlayer extends DOMPlugin{
         this.event.emit(EVENT_GLOBAL_AUDIO_SEEK, {time, initial});
     }
     setUrlFromDOM(ev){
+        this.event.emit('global.plugin.video.stop', {initial: true});
         this.open($(ev.target).closest(".file-entry").data("url"));
     }
     setFileOperation($cell){
