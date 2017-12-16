@@ -167,7 +167,7 @@ class VideoPlayer extends DOMPlugin{
                 event.emit(EVENT_MONITOR_VIDEO_SEEKED, ev);
             });
             // REGISTER
-            ['mp4', 'mpg', 'ogg'].forEach((extension) => {
+            ['mp4', 'mpg', 'ogg', 'mkv'].forEach((extension) => {
                 event.on(`plugin.file.icon.${extension}`, setFileIcon);
                 event.on(`plugin.file.operation.${extension}`, this.setFileOperation.bind(this));
             });
