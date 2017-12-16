@@ -21,6 +21,8 @@ router.post('/play', function(req, res) {
     if(typeof list === 'string' && typeof track === 'string'){
         debug(`FB2K Play List ${list + 1} Track ${track + 1}`);
         fb2k.play(list, track).then(onSuccess.bind(res)).catch(onError.bind(res));
+    }else{
+        res.end();
     }
 });
 router.post('/pause', function(req, res) {
@@ -36,6 +38,9 @@ router.post('/seek', function(req, res) {
     if(typeof position === 'string'){
         debug(`FB2K Seeking ${position}`);
         fb2k.seek(position).then(onSuccess.bind(res)).catch(onError.bind(res));
+    }else{
+        debug(req.body);
+        res.end();
     }
 });
 router.post('/volume', function(req, res) {
@@ -43,6 +48,8 @@ router.post('/volume', function(req, res) {
     if(typeof volume === 'string'){
         debug(`FB2K Volume ${volume}`);
         fb2k.volume(volume).then(onSuccess.bind(res)).catch(onError.bind(res));
+    }else{
+        res.end();
     }
 });
 
