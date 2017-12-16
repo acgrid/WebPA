@@ -1,4 +1,5 @@
 const DOMPlugin = require('./dom'),
+    Time = require('../lib/time'),
     $ = require('jquery');
 
 const SEEKING_OFFSET = 5;
@@ -133,9 +134,9 @@ class VideoPlayer extends DOMPlugin{
             });
             // SEEK
             this.$player.find("#video-seek").click(() => {
-                const time = this.$time.val().split(":");
-                event.emit("debug", `Seeking video ${time[0]}:${time[1]}`);
-                this.seek(parseInt(time[0], 10) * 60 + parseInt(time[1], 10));
+                const time = Time.msToSeconds(this.$time.val());
+                event.emit("debug", `Seeking video ${time}`);
+                this.seek(time);
             });
             this.$player.find("#video-backward").click(() => {
                 this.seek(this.video.currentTime - SEEKING_OFFSET);
