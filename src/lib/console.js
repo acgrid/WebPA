@@ -23,6 +23,10 @@ class Console extends Main{
                 ev.emit('debug', `Window ${event.detail} is closed`);
                 this.windows.delete(event.detail);
             });
+            $('body').on("mouseenter", "input[type=number]", function(ev){
+                this.focus();
+                ev.target.select();
+            });
         });
     }
     stop(){
@@ -37,8 +41,11 @@ class Console extends Main{
     createWindow(params){
         return jsPanel.create(params);
     }
+    hasWindow(name){
+        return this.windows.has(name);
+    }
     openWindow(name, params){
-        if(this.windows.has(name)) return; // created already
+        if(this.hasWindow(name)) return; // created already
         if(typeof params === "function") params = params() || null;
         if(!params) return;
         params.id = name;
