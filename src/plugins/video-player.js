@@ -84,12 +84,19 @@ class VideoPlayer extends DOMPlugin{
 <button id="video-forward" class="video-after-open" disabled><i class="fa fa-2x fa-fw fa-forward"></i></button>
 </p>
 <p class="text-center">
+<progress></progress>&nbsp;<span id="current">-</span>/<span id="total"></span>
+</p>
+<p class="text-center">
 <input type="time" value="00:00" /> <button id="video-seek" class="video-after-open" disabled><i class="fa fa-fw fa-angle-double-right"></i></button>
 </p>
 </div>`);
             this.$controls = this.$player.find(".video-after-open");
             this.$url = this.$player.find("input[type=url]");
             this.$time = this.$player.find("input[type=time]");
+            this.$current = this.$player.find("#current");
+            this.$total = this.$player.find("#total");
+            this.$progress = this.$player.find("progress");
+            let updateHandle;
             // OPEN
             this.$player.find("#video-open").click(() => {
                 this.open(this.$url.val());
@@ -181,6 +188,12 @@ class VideoPlayer extends DOMPlugin{
                     return $icon;
                 });
             });
+            event.on("console.started", () => {
+                updateHandle = setInterval(this.update.bind(this), 1000);
+            });
+            event.on("console.stopping", () => {
+                clearInterval(updateHandle);
+            });
         }
     }
     open(url, initial = true){
@@ -205,6 +218,18 @@ class VideoPlayer extends DOMPlugin{
         const $button = $('<button>播放</button>');
         $button.click(this.setUrlFromDOM.bind(this));
         $cell.append($button);
+    }
+    update(){
+        const total = this.video.duration, current = this.video.currentTime;
+        if(total){
+            this.$current.text(Time.secondsToMS(current));
+            this.$total.text(Time.secondsToMS(total));
+            this.$progress.prop({max: total, value: current});
+        }else{
+            this.$current.text('-');
+            this.$total.text('-');
+            this.$progress.removeProp('max');
+        }
     }
 }
 
