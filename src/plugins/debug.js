@@ -1,4 +1,5 @@
-const Plugin = require('./base');
+const Plugin = require('./base'),
+    $ = require('jquery');
 class Debug extends Plugin{
     static name(){
         return 'debug';
