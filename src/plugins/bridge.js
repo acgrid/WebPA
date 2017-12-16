@@ -18,6 +18,7 @@ class Bridge extends Plugin{
             socket.emit(name, params);
         }, forward = function(params = {}){
             const name = this.event, type = name.substr(0, name.indexOf('.'));
+            ev.emit("debug", `Test forwarding event ${name} with ${JSON.stringify(params)}`);
             if(type === 'sandbox'){
                 if(params.initial){
                     delete params.initial;
@@ -56,10 +57,10 @@ class Bridge extends Plugin{
             socket.on("monitor", receive);
             socket.on("common", receive);
             socket.on("global", receive);
-            ev.on("sandbox.*", forward);
-            ev.on("global.*", forward);
+            ev.on("sandbox.**", forward);
+            ev.on("global.**", forward);
         }else if(role === 'monitor'){
-            ev.on("promise.*", forward);
+            ev.on("promise.**", forward);
             socket.on("sandbox", receive);
         }
         ev.on("*.starting", function(){

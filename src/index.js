@@ -4,7 +4,9 @@ const Monitor = require('./lib/monitor'),
     Console = require('./lib/console'),
     Sandbox = require('./lib/sandbox'),
     Bridge = require('./plugins/bridge'),
-    DOM = require('./plugins/dom'),
+    Background = require('./plugins/background'),
+    VideoPlayer = require('./plugins/video-player'),
+    FB2K = require('./plugins/fb2k'),
     $ = require('jquery');
 
 $(function(){
@@ -12,9 +14,9 @@ $(function(){
         channel = $body.data("channel") || 'default',
         plugins = [
             new Bridge(),
-            new DOM('test', (layer) => {
-                if(typeof layer === "number") return $(`<div>Layer ${layer}</div>`);
-            })
+            new Background(),
+            new VideoPlayer(),
+            new FB2K(),
         ], debug = !!$body.data("debug");
     let role = $body.data('role'), main;
     // plugin dependencies are explicit via constructor
