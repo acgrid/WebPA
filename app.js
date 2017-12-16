@@ -51,6 +51,7 @@ app.use(function(req, res, next){
 });
 app.use('/console', require('./routes/console'));
 app.use('/monitor', require('./routes/monitor'));
+app.use('/fb2k', require('./routes/fb2k'));
 app.use('/media/:channel', (req, res) => {
     const http = config.get('media').http, channel = req.param('channel', 'default');
     require('./lib/media').list(channel).then((files) => {
