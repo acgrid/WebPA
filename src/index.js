@@ -1,3 +1,4 @@
+import 'bootstrap';
 if(!window) throw new Error('I am not in a browser!');
 
 const Monitor = require('./lib/monitor'),
@@ -45,7 +46,6 @@ $(function(){
         default:
             throw new Error('No role defined in body data.');
     }
-    window.$ = $;
     window.webPA = main;
     window.webPA.role = role;
     main.start();

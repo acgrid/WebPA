@@ -6,6 +6,11 @@ const webpack = require('webpack'),
             // this assumes your vendor imports exist in the node_modules directory
             return module.context && module.context.includes("node_modules");
         }
+    }), new webpack.ProvidePlugin({
+        $: 'jquery',
+        jQuery: 'jquery',
+        'window.jQuery': 'jquery',
+        Popper: ['popper.js', 'default'],
     })],
     entry = {app: ['./src/index.js']};
 
