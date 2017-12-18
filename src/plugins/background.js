@@ -74,7 +74,7 @@ class Background extends DOM{
     }
     setFileOperation($cell, extension){
         if(FileType.test(extension)){
-            const $button = $('<button>设置背景</button>');
+            const $button = $('<button class="btn btn-primary btn-sm"><i class="fa fa-fw fa-image" title="设置背景"></i></button>');
             $button.click(this.setUrlFromDOM.bind(this));
             $cell.append($button);
         }

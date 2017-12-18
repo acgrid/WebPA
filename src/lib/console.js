@@ -4,18 +4,23 @@ const $ = require('jquery'),
 
 const $icon = $('<div class="icon-container"><div class="icon"><i class="fa fa-4x fa-fw"></i><p></p></div></div>');
 
-function execAdjustTable(){
-    const $table = this.find("table.scroll > tbody");
-    if($table.length){
-        $table.css("height", $table.closest(".jsPanel-content").height() - $table.offsetParent().offset().top);
+function scrollTableBody(){
+    // this should be a table.scroll jQuery object
+    const setHeight = () => {
+        const $panel = this.closest(".jsPanel-content"), $scrollBody = $panel.find(".dataTables_scrollBody");
+        $scrollBody.css("max-height", $panel.height() - ($scrollBody.offset().top - $panel.offset().top) - 30);
+    };
+    if($.fn.dataTable.isDataTable(this)){
+        setHeight();
+    }else{
+        let options = this.data("DataTableOptions") || {};
+        options.scrollY = '100px';
+        options.scrollCollapse = true;
+        options.paging = false;
+        options.drawCallback = setHeight;
+        this.DataTable(options);
     }
-}
 
-function adjustTable(params){
-    if(params.content instanceof HTMLElement){
-        params.resizeit = params.resizeit || {};
-        params.resizeit.resize = execAdjustTable.bind($(params.content));
-    }
 }
 
 class Console extends Main{
@@ -38,12 +43,14 @@ class Console extends Main{
                 this.windows.delete(event.detail);
             });
             document.addEventListener('jspanelloaded', (event) => {
-                execAdjustTable.apply($(`#${event.detail}`));
+                const $table = $(`#${event.detail}`).find("table.scroll");
+                if($table.length) scrollTableBody.apply($table);
             });
             $('body').on("mouseenter", "input[type=number]", function(ev){
                 this.focus();
                 ev.target.select();
             });
+
         });
     }
     stop(){
@@ -66,7 +73,13 @@ class Console extends Main{
         if(typeof params === "function") params = params() || null;
         if(!params) return;
         params.id = name;
-        adjustTable(params);
+        if(params.content instanceof HTMLElement){
+            const $table = $(params.content).find("table.scroll");
+            if($table.length){
+                params.resizeit = params.resizeit || {};
+                params.resizeit.resize = scrollTableBody.bind($table);
+            }
+        }
         this.windows.add(name);
         return this.createWindow(params);
     }

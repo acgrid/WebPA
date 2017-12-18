@@ -88,14 +88,21 @@ body {
   }
 }
 .file-manager{
+  padding-top: 0.5em;
   table{
     font-size: 1.25em;
     width: 100%;
+    th{
+      text-align: center;
+    }
     th:first-child{
-      width: 2em;
+      width: 1.5em;
     }
     th:first-child,td:first-child{
       text-align: center;
+    }
+    .btn-sm{
+      line-height: 1;
     }
   }
 }
@@ -115,14 +122,11 @@ body {
     td.disabled{ background: #e6dff0; }
   }
 }
-table.scroll{
-  &,tr{
-    width: 100%;
+.jsPanel{
+  .dataTables_info, .dt-buttons{
+    padding-left: 1em;
   }
-  thead,tbody{
-    display: block;
-  }
-  tbody{
-    overflow-y: auto;
+  .dataTables_filter{
+    padding-right: 1em;
   }
 }

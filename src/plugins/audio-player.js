@@ -214,7 +214,7 @@ class AudioPlayer extends DOMPlugin{
         this.open($(ev.target).closest(".file-entry").data("url"));
     }
     setFileOperation($cell){
-        const $button = $('<button>播放</button>');
+        const $button = $('<button class="btn btn-primary btn-sm"><i class="fa fa-fw fa-play"></i></button>');
         $button.click(this.setUrlFromDOM.bind(this));
         $cell.append($button);
     }

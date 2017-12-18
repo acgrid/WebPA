@@ -1,10 +1,19 @@
 const Plugin = require('./base'),
     $ = require('jquery');
 
+require('../lib/datatable');
+
+/**
+ *
+ * @param data
+ * @param type
+ * @returns {string}
+ */
+function RenderNothing(data, type){
+    return type === 'display' ? '' : data;
+}
+
 module.exports = class FileManager extends Plugin{
-    constructor(){
-        super();
-    }
     static name(){
         return 'file-manager';
     }
@@ -14,16 +23,62 @@ module.exports = class FileManager extends Plugin{
         if(type === 'console'){
             this.$table = $(`
 <div class="file-manager">
-<p class="text-center"><button id="file-manager-refresh">刷新</button></p>
-<table class="scroll">
+<table class="table table-bordered table-responsive table-striped table-condensed table-hover scroll">
 <thead>
+<tr><th><i class="fa fa-file fa-fw"></i></th><th>文件名</th><th>操作</th></tr>
 </thead>
 <tbody></tbody>
 </table>
 </div>`);
-            this.$row = $(`<tr class="file-entry"><td><i class="fa fa-file fa-fw"></i></td><td></td><td></td></tr>`);
-            this.$table.find('#file-manager-refresh').click(this.refresh.bind(this));
-            this.$body = this.$table.find("tbody");
+            this.$icon = $('<i class="fa fa-file fa-fw"></i>');
+            this.$table.find("table").data("DataTableOptions", {
+                order: [[1, 'asc']],
+                ajax: {
+                    url: `/media/${this.main.channel}`,
+                    cache: false,
+                    dataSrc: (json) => {
+                        if(json && json.prefix && json.files){
+                            const prefix = json.prefix;
+                            return json.files.map((file) => {
+                                return {
+                                    file,
+                                    url: prefix + file,
+                                    extension: file.substr(file.lastIndexOf('.') + 1)
+                                };
+                            });
+                        }else{
+                            this.event.emit("debug", `Bad file list: ${JSON.stringify(json)}`);
+                            return [];
+                        }
+                    },
+                },
+                buttons: [
+                    {
+                        text: '<i class="fa fa-fw fa-sync"></i>',
+                        titleAttr: '同步',
+                        className: 'btn btn-warning',
+                        action: function (e, dt) {
+                            dt.ajax.reload();
+                        }
+                    }
+                ],
+                columns: [
+                    {data: 'extension', searchable: false, render: RenderNothing, createdCell: (cell, data) => {
+                        const $icon = this.$icon.clone();
+                        this.event.emit(`plugin.file.icon.${data}`, $icon, data);
+                        $(cell).append($icon);
+                    }},
+                    {data: 'file'},
+                    {data: null, searchable: false, orderable: false, render: RenderNothing, createdCell: (cell, data, row) => {
+                        const $cell = $(cell);
+                        this.event.emit(`plugin.file.operation.${row.extension}`, $cell, row.extension, row.file);
+                    }}
+                ],
+                createdRow: (row, data) => {
+                    $(row).addClass("file-entry").data("url", data.url);
+                },
+                dom: 'Bfrtip',
+            });
             event.on("console.build", () => {
                 main.createIcon(($icon) => {
                     $icon.find("i").addClass("fa-cube");
@@ -40,33 +95,6 @@ module.exports = class FileManager extends Plugin{
                     return $icon;
                 });
             });
-            event.on("console.started", () => {
-                this.refresh();
-            });
         }
-    }
-    refresh(){
-        this.$body.empty();
-        $.ajax({
-            url: `/media/${this.main.channel}`,
-            method: 'GET',
-            cache: false,
-            dataType: "json"
-        }).then((data) => {
-            if(data && data.prefix && data.files){
-                const prefix = data.prefix;
-                data.files.forEach((file) => {
-                    const $row = this.$row.clone();
-                    const extension = file.substr(file.lastIndexOf('.') + 1);
-                    this.event.emit(`plugin.file.icon.${extension}`, $row.find("i"), extension);
-                    $row.data("url", prefix + file);
-                    $row.find("td:nth-child(2)").text(file);
-                    this.event.emit(`plugin.file.operation.${extension}`, $row.find("td:last-child"), extension, file);
-                    this.$body.append($row);
-                });
-            }else{
-                this.event.emit("debug", `Bad file list: ${JSON.stringify(data)}`);
-            }
-        });
     }
 };
