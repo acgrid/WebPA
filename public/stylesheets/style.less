@@ -30,13 +30,21 @@ body {
     text-align: center;
     cursor: pointer;
     div{
-      margin: 0.5em auto;
+      margin: 0 auto;
+      padding: 0.5em;
       color: silver;
+      border: 2px solid transparent;
+      &:hover{
+        border-radius: 1em;
+        border-color: whitesmoke;
+        background-color: rgba(192, 192, 192, 0.8);
+      }
     }
     p{
       color: white;
       text-shadow: cornsilk 2px 2px 2px;
       font-size: 1.5em;
+      margin: 0;
     }
   }
   &:after{
