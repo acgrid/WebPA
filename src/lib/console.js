@@ -43,14 +43,16 @@ class Console extends Main{
                 this.windows.delete(event.detail);
             });
             document.addEventListener('jspanelloaded', (event) => {
-                const $table = $(`#${event.detail}`).find("table.scroll");
-                if($table.length) scrollTableBody.apply($table);
+                ev.emit("console.window.loaded", $(`#${event.detail}`));
             });
             $('body').on("mouseenter", "input[type=number]", function(ev){
                 this.focus();
                 ev.target.select();
             });
-
+            ev.on("console.window.loaded", ($window) => {
+                const $table = $window.find("table.scroll");
+                if($table.length) scrollTableBody.apply($table);
+            });
         });
     }
     stop(){

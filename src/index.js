@@ -11,6 +11,7 @@ const Monitor = require('./lib/monitor'),
     FB2K = require('./plugins/fb2k'),
     MediaManager = require('./plugins/file-manager'),
     ProgramManager = require('./plugins/program-manager'),
+    Locker = require('./plugins/locker'),
     $ = require('jquery');
 
 $(function(){
@@ -18,6 +19,7 @@ $(function(){
         channel = $body.data("channel") || 'default',
         plugins = [
             new Bridge(),
+            new Locker(),
             new Background(),
             new VideoPlayer(),
             new AudioPlayer(),

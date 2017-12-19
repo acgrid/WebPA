@@ -1,3 +1,4 @@
+@import (reference) "bootstrap/less/variables";
 body {
   padding: 0;
   margin: 0;
@@ -128,5 +129,13 @@ body {
   }
   .dataTables_filter{
     padding-right: 1em;
+  }
+}
+i.lock-icon{
+  &.fa-lock-open{
+    color: @brand-success;
+  }
+  &.fa-lock{
+    color: @brand-danger;
   }
 }
