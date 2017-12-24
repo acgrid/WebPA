@@ -22,7 +22,7 @@ module.exports = class FileManager extends Plugin{
         this.event = event;
         if(type === 'console'){
             this.$table = $(`
-<div class="file-manager">
+<div class="file-manager window-padding-top">
 <table class="table table-bordered table-responsive table-striped table-condensed table-hover scroll">
 <thead>
 <tr><th><i class="fa fa-file fa-fw"></i></th><th>文件名</th><th>操作</th></tr>
