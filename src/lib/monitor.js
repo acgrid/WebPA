@@ -1,9 +1,11 @@
 const $ = require('jquery'),
     Main = require('./main'),
+    stoarge = require('../lib/storage'),
     ev = require('../lib/event');
 
 class Monitor extends Main{
     constructor(channel, sandbox, plugins = []){
+        stoarge.channel(channel);
         super('monitor', plugins, {channel, sandbox}, (ev) => {
 
         });

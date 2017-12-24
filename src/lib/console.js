@@ -1,5 +1,6 @@
 const $ = require('jquery'),
     Main = require('./main'),
+    stoarge = require('../lib/storage'),
     ev = require('../lib/event');
 
 const $icon = $('<div class="icon-container"><div class="icon"><i class="fa fa-4x fa-fw"></i><p></p></div></div>');
@@ -25,6 +26,7 @@ function scrollTableBody(){
 
 class Console extends Main{
     constructor(channel, desktop, plugins){
+        stoarge.channel(channel);
         super('console', plugins, {channel, desktop}, (ev) => {
             ev.emit("console.build");
         });
