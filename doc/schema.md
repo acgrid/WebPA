@@ -93,5 +93,5 @@ Play Audio|Stop|×|√|×|
 Play Video|Stop|×|×|√|
 Image,Play Audio|On audio stops, Unset Image|√|√|×|
 Image, Play Video|On video stops, Unset Image|√|×|√|
-Play Audio,Muted Video|Stop|×|√|√|
-Image,Play Audio,Muted Video|On longer stops, Unset Image|√|√|√|
+*NG* Play Audio,Muted Video|Stop|×|√|√|
+*NG* Image,Play Audio,Muted Video|On longer stops, Unset Image|√|√|√|

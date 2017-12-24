@@ -12,11 +12,49 @@ function RenderNothing(data, type){
     return type === 'display' ? '' : data;
 }
 
+const $prepare = $('<button class="btn btn-action btn-prepare btn-warning btn-sm"><i class="fa fa-fw fa-exclamation" title="预备"></i></button>');
+const $play = $('<button class="btn btn-action btn-execute btn-danger btn-sm"><i class="fa fa-fw fa-play" title="执行"></i></button>');
+
 module.exports = class ProgramManager extends Plugin{
     static name(){
         return 'program-manager';
     }
+    prepare($button){
+        this.$table.find(".btn-action").prop("disabled", true);
+        $button.siblings('.btn-execute').prop("disabled", false);
+    }
+    execute($button){
+        this.event.emit("debug", "Execute program");
+        $button.prop("disabled", true);
+        console.log($button.closest(".control").data("control"));
+    }
+    autoProgramming(program, files, $cell){
+        const selected = {}, control = {start: [], listen: [], stop: []};
+        this.event.emit("plugin.program.file.select", files, selected); // There are sync events!
+        if(!selected.image && !selected.video && !selected.audio) return;
+        if(selected.video && selected.audio){
+            this.event.emit("debug", "Auto programming play video and audio is currently not supported");
+            return;
+        }
+        if(selected.image){
+            control.start.push({event: "global.plugin.background.update", data: {url: selected.image}});
+            if(selected.video || selected.audio) control.stop.push({event: "global.plugin.background.pop"});
+        }
+        if(selected.audio){
+            control.start.push({event: "global.plugin.audio.open", data: {url: selected.audio}});
+            control.listen.push('promise.plugin.audio.stopped');
+        }
+        if(selected.video){
+            control.start.push({event: "global.plugin.video.open", data: {url: selected.video}});
+            control.listen.push('promise.plugin.video.stopped');
+        }
+        $cell.addClass("control").data("control", control);
+        $cell.append($prepare.clone());
+        $cell.append('&nbsp;');
+        $cell.append($play.clone());
+    }
     init(type, main, event) {
+        const that = this;
         this.main = main;
         this.event = event;
         this.sessions = new Set();
@@ -61,9 +99,11 @@ module.exports = class ProgramManager extends Plugin{
                     {data: 'program.arrange.start'},
                     {data: 'program.arrange.pa'}, // TODO add MIC indicator
                     {data: 'program.arrange.remark'},
-                    {data: null, searchable: false, orderable: false, render: RenderNothing, createdCell: (cell, data, row) => {
+                    {data: null, searchable: false, orderable: false, render: RenderNothing, createdCell: (cell, data, program) => {
                         const $cell = $(cell);
-                        this.event.emit(`plugin.program.operation`, $cell, row);
+                        this.event.emit("plugin.media.match", new RegExp(`^${data._id}`), (files) => {
+                            this.autoProgramming(program, files, $cell);
+                        });
                     }}
                 ],
                 ajax: {
@@ -109,15 +149,19 @@ module.exports = class ProgramManager extends Plugin{
                     $(row).addClass("program-entry").data("program", data.program);
                 },
                 dom: 'Bfrtip',
+            }).on("click", ".btn-prepare", function(){
+                that.prepare($(this));
+            }).on("click", ".btn-execute", function(){
+                that.execute($(this));
             });
             event.on("console.build", () => {
                 main.createIcon(($icon) => {
                     $icon.find("i").addClass("fa-list");
-                    $icon.find("p").text("节目表");
+                    $icon.find("p").text("流程表");
                     $icon.click(() => {
                         main.openWindow('program-manager', {
                             theme:       'info',
-                            headerTitle: '节目表',
+                            headerTitle: '流程表',
                             position:    'center-top 0 30',
                             contentSize: '1440 720',
                             content:     this.$manager.get(0)
@@ -127,7 +171,7 @@ module.exports = class ProgramManager extends Plugin{
                 });
             });
             event.on("console.started", () => {
-                //this.refresh();
+                event.emit("plugin.media.require.files");
             });
         }
     }
