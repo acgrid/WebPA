@@ -12,6 +12,7 @@ function scrollTableBody(){
         $scrollBody.css("max-height", $panel.height() - ($scrollBody.offset().top - $panel.offset().top) - 30);
     };
     if($.fn.dataTable.isDataTable(this)){
+        this.DataTable().draw();
         setHeight();
     }else{
         let options = this.data("DataTableOptions") || {};
