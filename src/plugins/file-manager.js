@@ -17,9 +17,25 @@ module.exports = class FileManager extends Plugin{
     static name(){
         return 'file-manager';
     }
+    buildFileList(json){
+        if(json && json.prefix && json.files){
+            return this.files = json.files.map((file) => {
+                return {
+                    file,
+                    url: json.prefix + file,
+                    extension: file.substr(file.lastIndexOf('.') + 1)
+                };
+            });
+        }else{
+            this.event.emit("debug", `Bad file list: ${JSON.stringify(json)}`);
+            return [];
+        }
+    }
     init(type, main, event) {
         this.main = main;
         this.event = event;
+        this.mediaListUrl = `/media/${this.main.channel}`;
+        this.files = [];
         if(type === 'console'){
             this.$table = $(`
 <div class="file-manager window-padding-top">
@@ -34,23 +50,9 @@ module.exports = class FileManager extends Plugin{
             this.$table.find("table").data("DataTableOptions", {
                 order: [[1, 'asc']],
                 ajax: {
-                    url: `/media/${this.main.channel}`,
+                    url: this.mediaListUrl,
                     cache: false,
-                    dataSrc: (json) => {
-                        if(json && json.prefix && json.files){
-                            const prefix = json.prefix;
-                            return json.files.map((file) => {
-                                return {
-                                    file,
-                                    url: prefix + file,
-                                    extension: file.substr(file.lastIndexOf('.') + 1)
-                                };
-                            });
-                        }else{
-                            this.event.emit("debug", `Bad file list: ${JSON.stringify(json)}`);
-                            return [];
-                        }
-                    },
+                    dataSrc: this.buildFileList.bind(this)
                 },
                 buttons: [
                     {
@@ -84,17 +86,32 @@ module.exports = class FileManager extends Plugin{
                     $icon.find("i").addClass("fa-cube");
                     $icon.find("p").text("媒体库");
                     $icon.click(() => {
-                        main.openWindow('file-manager', {
-                            theme:       'info',
-                            headerTitle: '媒体库',
-                            position:    'center-top 0 30',
-                            contentSize: '800 600',
-                            content:     this.$table.get(0)
-                        });
+                        this.open();
                     });
                     return $icon;
                 });
             });
+            event.on("plugin.media.require.files", () => {
+                if(this.files.length) return;
+                this.event.emit("debug", "Preload file list as somebody required!");
+                $.getJSON(this.mediaListUrl, this.buildFileList.bind(this));
+            });
+            event.on("plugin.media.match", (regexp, callback) => {
+                let matchedFiles = this.files.filter(entry => {
+                    return regexp.test(entry.file);
+                });
+                if(matchedFiles.length) callback(matchedFiles);
+            });
         }
+    }
+    open(status){
+        this.main.openWindow('file-manager', {
+            theme:       'info',
+            headerTitle: '媒体库',
+            position:    'center-top 0 30',
+            contentSize: '800 600',
+            content:     this.$table.get(0),
+            setStatus:   status
+        });
     }
 };
