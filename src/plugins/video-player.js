@@ -171,6 +171,14 @@ class VideoPlayer extends DOMPlugin{
                 event.on(`plugin.file.icon.${extension}`, setFileIcon);
                 event.on(`plugin.file.operation.${extension}`, this.setFileOperation.bind(this));
             });
+            event.on("plugin.program.file.select", (files, selected) => {
+                for(let file of files){
+                    if(/mp4|mpg|ogg|mkv/i.test(file.extension)){
+                        selected.video = file.url;
+                        return;
+                    }
+                }
+            });
             // UI
             event.on("console.build", () => {
                 main.createIcon(($icon) => {

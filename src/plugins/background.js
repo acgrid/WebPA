@@ -5,7 +5,7 @@ const EVENT_GLOBAL_UPDATE_URL = "global.plugin.background.update",
     EVENT_SANDBOX_UPDATE_URL = "sandbox.background.image.update",
     STORAGE_BACKGROUND_URL = "plugin.background.url";
 
-const FileType = /png|jpe?g|gif/;
+const FileType = /png|jpe?g|gif/i;
 
 function setFileIcon($icon, extension){
     if(FileType.test(extension)){
@@ -27,6 +27,7 @@ class Background extends DOM{
     }
     myInit(type, main, event){
         this.event = event;
+        this.stack = [];
         event.on(EVENT_SANDBOX_UPDATE_URL, (data) => {
             this.$dom.css("background-image", data.url ? `url(${data.url})` : "");
         });
@@ -47,6 +48,14 @@ class Background extends DOM{
             // Register processor
             event.on("plugin.file.icon.*", setFileIcon);
             event.on("plugin.file.operation.*", this.setFileOperation.bind(this));
+            event.on("plugin.program.file.select", (files, selected) => {
+                for(let file of files){
+                    if(FileType.test(file.extension)){
+                        selected.image = file.url;
+                        return;
+                    }
+                }
+            });
             event.on("console.build", () => {
                 main.createIcon(($icon) => {
                     $icon.find("i").addClass("fa-image");
@@ -67,7 +76,14 @@ class Background extends DOM{
         }
     }
     setUrl(url, initial = true){
+        if(initial) this.stack.push(url);
         this.event.emit(EVENT_GLOBAL_UPDATE_URL, {url, initial});
+    }
+    resetUrl(initial = true){
+        if(this.stack.length > 1){
+            this.stack.pop();
+            this.event.emit(EVENT_GLOBAL_UPDATE_URL, {url: this.stack[this.stack.length - 1], initial});
+        }
     }
     setUrlFromDOM(ev){
         this.setUrl($(ev.target).closest(".file-entry").data("url"));

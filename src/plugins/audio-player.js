@@ -169,6 +169,14 @@ class AudioPlayer extends DOMPlugin{
                 event.on(`plugin.file.icon.${extension}`, setFileIcon);
                 event.on(`plugin.file.operation.${extension}`, this.setFileOperation.bind(this));
             });
+            event.on("plugin.program.file.select", (files, selected) => {
+                for(let file of files){
+                    if(/mp3|flac|wav|ogg/i.test(file.extension)){
+                        selected.audio = file.url;
+                        return;
+                    }
+                }
+            });
             // UI
             event.on("console.build", () => {
                 main.createIcon(($icon) => {
