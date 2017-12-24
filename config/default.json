@@ -17,5 +17,9 @@
     "username": "",
     "password": "",
     "timeout": 500
+  },
+  "program": {
+    "url": "http://127.0.0.1:4000/",
+    "key": "your key here"
   }
 }

@@ -1,29 +1,115 @@
 const Plugin = require('./base'),
+    Time = require('../lib/time'),
     $ = require('jquery');
 
+/**
+ *
+ * @param data
+ * @param type
+ * @returns {string}
+ */
+function RenderNothing(data, type){
+    return type === 'display' ? '' : data;
+}
+
 module.exports = class ProgramManager extends Plugin{
-    constructor(){
-        super();
-    }
     static name(){
         return 'program-manager';
     }
     init(type, main, event) {
         this.main = main;
         this.event = event;
+        this.sessions = new Set();
         if(type === 'console'){
-            this.$table = $(`
-<div class="program-manager">
-<p class="text-center"><button id="file-manager-refresh">刷新</button></p>
-<table class="scroll">
+            this.$manager = $(`
+<div class="program-manager window-padding-top">
+<table class="table table-bordered table-responsive table-striped table-condensed table-hover scroll">
 <thead>
+<tr>
+<th>ID</th>
+<th>场次</th>
+<th><i class="fa fa-clock"></i></th>
+<th>摘要</th>
+<th>名义</th>
+<th>名称</th>
+<th>时长</th>
+<th>时序</th>
+<th>PA</th>
+<th>备注</th>
+<th><i class="fa fa-cogs"></i></th>
+</tr>
 </thead>
 <tbody></tbody>
 </table>
 </div>`);
-            this.$row = $('<tr class="program"><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td class="pre"></td><td></td><td><button class="info">预备</button>&nbsp;&nbsp;&nbsp;<button class="play">播放</button></td></tr>');
-            this.$table.find('#file-manager-refresh').click(this.refresh.bind(this));
-            this.$body = this.$table.find("tbody");
+            this.$table = this.$manager.find("table");
+            this.$table.data("DataTableOptions", {
+                order: [[0, 'asc']],
+                autoWidth: false,
+                columns: [
+                    {data: {_: "sort", display: "_id", filter: "_id"}, width: "30px"},
+                    {data: "session", "visible": false},
+                    {data: 'program.clock', width: "3em", render: (data, type) => {
+                        return type === 'display' ? Time.secondsToHMS(data) : data;
+                    }},
+                    {data: 'program.summary'},
+                    {data: 'program.actor.unit', className: "nowrap"},
+                    {data: 'program.name'},
+                    {data: 'program.duration', width: "3em", render: (data, type) => {
+                        return type === 'display' ? Time.secondsToMS(data) : data;
+                    }},
+                    {data: 'program.arrange.start'},
+                    {data: 'program.arrange.pa'}, // TODO add MIC indicator
+                    {data: 'program.arrange.remark'},
+                    {data: null, searchable: false, orderable: false, render: RenderNothing, createdCell: (cell, data, row) => {
+                        const $cell = $(cell);
+                        this.event.emit(`plugin.program.operation`, $cell, row);
+                    }}
+                ],
+                ajax: {
+                    url: `/program/${this.main.channel}`,
+                    dataSrc: (programs) => {
+                        this.programs = programs;
+                        programs.forEach(program => {
+                            this.sessions.add(program.session);
+                        });
+                        return programs;
+                    },
+                },
+                buttons: [
+                    {
+                        text: '<i class="fa fa-fw fa-sync"></i>',
+                        titleAttr: '同步',
+                        className: 'btn btn-warning',
+                        action: function (e, dt) {
+                            dt.ajax.reload();
+                        }
+                    }
+                ],
+                initComplete: () => {
+                    const dt = this.$table.DataTable();
+                    let container;
+                    new $.fn.dataTable.Buttons(dt, {
+                        buttons: Array.from(this.sessions, (session) => {
+                            return {
+                                text: session,
+                                className: "btn btn-default btn-select-session",
+                                action: function (e, dt, node) {
+                                    container.find(".btn-primary").addClass("btn-default").removeClass("btn-primary");
+                                    dt.column(1).search(node.text()).draw();
+                                    node.addClass("btn-primary").removeClass("btn-default");
+                                }
+                            };
+                        })
+                    });
+                    container = dt.buttons(1, null).container();
+                    container.prependTo($(dt.table().container()).find(".dt-buttons"));
+                },
+                createdRow: (row, data) => {
+                    $(row).addClass("program-entry").data("program", data.program);
+                },
+                dom: 'Bfrtip',
+            });
             event.on("console.build", () => {
                 main.createIcon(($icon) => {
                     $icon.find("i").addClass("fa-list");
@@ -34,66 +120,15 @@ module.exports = class ProgramManager extends Plugin{
                             headerTitle: '节目表',
                             position:    'center-top 0 30',
                             contentSize: '1440 720',
-                            content:     this.$table.get(0)
+                            content:     this.$manager.get(0)
                         });
                     });
                     return $icon;
                 });
             });
             event.on("console.started", () => {
-                this.refresh();
+                //this.refresh();
             });
         }
-    }
-    refresh(){
-        this.$body.empty();
-        $.ajax({
-            url: `/programs/${this.main.channel}.json`,
-            method: 'GET',
-            cache: false,
-            dataType: "json"
-        }).then((programs) => {
-            if(Array.isArray(programs)){
-                programs.forEach((program, index) => {
-                    const $row = this.$row.clone().
-                    find("td:nth-child(1)").text(program['SESSION']).end().
-                    find("td:nth-child(2)").text(program['CHAPTER'] + program['SEQUENCE']).end().
-                    find("td:nth-child(3)").text(program['CLOCK']).end().
-                    find("td:nth-child(4)").text(program['LENGTH']).end().
-                    find("td:nth-child(5)").text(program['TYPE']).end().
-                    find("td:nth-child(6)").text(program['UNIT']).end().
-                    find("td:nth-child(7)").text(program['SONG']).end().
-                    find("td:nth-child(8)").text(program['ARRANGE']).end().
-                    find("td:nth-child(9)").text(program['LIGHT']).end().
-                    find("td:nth-child(10)").text(program['SPECIAL']).end().
-                    data("index", index);
-                    if(program['FB2K_PL'] !== null && program['FB2K_IDX'] !== null){
-                        $row.find("td:nth-child(11)").text((program['FB2K_PL'] + 1) + "-" + (program['FB2K_IDX'] + 1)).addClass('enabled');
-                        $row.data("fb2k", {track: program['FB2K_PL'], list: program['FB2K_IDX']});
-                    }else{
-                        $row.find("td:nth-child(11)").text('-').addClass('disabled')
-                    }
-                    if(program['MPC']){
-                        $row.find("td:nth-child(12)").text('Y').attr('title', program['MPC']).addClass('enabled');
-                        $row.data("video", {filename: program['MPC']});
-                    }else{
-                        $row.find("td:nth-child(12)").text('N').addClass('disabled')
-                    }
-                    if(program['LRC']){
-                        $row.find("td:nth-child(13)").text('Y').attr('title', program['LRC']).addClass('enabled');
-                    }else{
-                        $row.find("td:nth-child(13)").text('N').addClass('disabled')
-                    }
-                    if(program['LOOP']){
-                        $row.find("td:nth-child(14)").text('T').addClass('enabled');
-                    }else{
-                        $row.find("td:nth-child(14)").text('F').addClass('disabled')
-                    }
-                    this.$body.append($row);
-                });
-            }else{
-                this.event.emit("debug", `Bad programs list: ${JSON.stringify(programs)}`);
-            }
-        });
     }
 };
