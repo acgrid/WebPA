@@ -8,11 +8,13 @@ class Main
         ev.emit(`${this.name}.constructing`, arguments, this);
         if(!Array.isArray(plugins)) plugins = [];
         this.name = name;
+        this.pluginMap = {};
         pluginList.set(this, plugins);
         privateData.set(this, data);
         this.plugins.forEach((plugin) => {
             const pluginName = plugin.constructor.name();
             ev.emit(`plugin.${pluginName}.initializing`, plugin, this);
+            this.pluginMap[pluginName] = plugin;
             plugin.init(name, this, ev);
             ev.emit(`plugin.${pluginName}.initialized`);
         });
@@ -27,6 +29,9 @@ class Main
     }
     static get event(){
         return ev;
+    }
+    plugin(name){
+        return this.pluginMap[name];
     }
     start(func = null){
         ev.emit(`${this.name}.starting`);
