@@ -1,7 +1,9 @@
 const DOM = require('./dom'),
     $ = require('jquery'),
     Storage = require('../lib/storage');
-const EVENT_GLOBAL_UPDATE_URL = "global.plugin.background.update",
+const
+    EVENT_GLOBAL_UPDATE_URL = "global.plugin.background.update",
+    EVENT_GLOBAL_UPDATE_POP = "global.plugin.background.pop",
     EVENT_SANDBOX_UPDATE_URL = "sandbox.background.image.update",
     STORAGE_BACKGROUND_URL = "plugin.background.url";
 
@@ -29,7 +31,7 @@ class Background extends DOM{
         this.event = event;
         this.stack = [];
         event.on(EVENT_SANDBOX_UPDATE_URL, (data) => {
-            this.$dom.css("background-image", data.url ? `url(${data.url})` : "");
+            this.$dom.css("background-image", data.url ? `url("${data.url}")` : "");
         });
         if(type === 'console'){
             this.url = Storage.get(STORAGE_BACKGROUND_URL, `http://127.0.0.1:8080/${main.channel}/KV.png`);
@@ -44,6 +46,9 @@ class Background extends DOM{
                 this.$url.val(url);
                 Storage.set(STORAGE_BACKGROUND_URL, url);
                 event.emit(EVENT_SANDBOX_UPDATE_URL, data);
+            });
+            event.on(EVENT_GLOBAL_UPDATE_POP, (data) => {
+                this.resetUrl(data.initial || true);
             });
             // Register processor
             event.on("plugin.file.icon.*", setFileIcon);
