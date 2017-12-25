@@ -12,6 +12,7 @@ function RenderNothing(data, type){
     return type === 'display' ? '' : data;
 }
 
+const $fileIcon = $('<i class="fa fa-file fa-fw"></i>');
 const $prepare = $('<button class="btn btn-action btn-prepare btn-warning btn-sm"><i class="fa fa-fw fa-exclamation" title="预备"></i></button>');
 const $play = $('<button class="btn btn-action btn-execute btn-danger btn-sm"><i class="fa fa-fw fa-play" title="执行"></i></button>');
 
@@ -28,30 +29,27 @@ module.exports = class ProgramManager extends Plugin{
         $button.prop("disabled", true);
         console.log($button.closest(".control").data("control"));
     }
-    autoProgramming(program, files, $cell){
-        const selected = {}, control = {start: [], listen: [], stop: []};
-        this.event.emit("plugin.program.file.select", files, selected); // There are sync events!
-        if(!selected.image && !selected.video && !selected.audio) return;
-        if(selected.video && selected.audio){
+    autoProgramming(program, files){
+        program.files = {};
+        program.control = {start: [], listen: [], stop: []};
+        this.event.emit("plugin.program.file.select", files, program.files); // There are sync events!
+        if(!program.files.image && !program.files.video && !program.files.audio) return;
+        if(program.files.video && program.files.audio){
             this.event.emit("debug", "Auto programming play video and audio is currently not supported");
             return;
         }
-        if(selected.image){
-            control.start.push({event: "global.plugin.background.update", data: {url: selected.image}});
-            if(selected.video || selected.audio) control.stop.push({event: "global.plugin.background.pop"});
+        if(program.files.image){
+            program.control.start.push({event: "global.plugin.background.update", data: {url: program.files.image}});
+            if(program.files.video || program.files.audio) program.control.stop.push({event: "global.plugin.background.pop"});
         }
-        if(selected.audio){
-            control.start.push({event: "global.plugin.audio.open", data: {url: selected.audio}});
-            control.listen.push('promise.plugin.audio.stopped');
+        if(program.files.audio){
+            program.control.start.push({event: "global.plugin.audio.open", data: {url: program.files.audio}});
+            program.control.listen.push('promise.plugin.audio.stopped');
         }
-        if(selected.video){
-            control.start.push({event: "global.plugin.video.open", data: {url: selected.video}});
-            control.listen.push('promise.plugin.video.stopped');
+        if(program.files.video){
+            program.control.start.push({event: "global.plugin.video.open", data: {url: program.files.video}});
+            program.control.listen.push('promise.plugin.video.stopped');
         }
-        $cell.addClass("control").data("control", control);
-        $cell.append($prepare.clone());
-        $cell.append('&nbsp;');
-        $cell.append($play.clone());
     }
     init(type, main, event) {
         const that = this;
@@ -74,7 +72,8 @@ module.exports = class ProgramManager extends Plugin{
 <th>时序</th>
 <th>PA</th>
 <th>备注</th>
-<th><i class="fa fa-cogs"></i></th>
+<th>文件</th>
+<th>操作</th>
 </tr>
 </thead>
 <tbody></tbody>
@@ -99,11 +98,23 @@ module.exports = class ProgramManager extends Plugin{
                     {data: 'program.arrange.start'},
                     {data: 'program.arrange.pa'}, // TODO add MIC indicator
                     {data: 'program.arrange.remark'},
-                    {data: null, searchable: false, orderable: false, render: RenderNothing, createdCell: (cell, data, program) => {
+                    {data: 'files', defaultContent: [], className: "nowrap", searchable: false, orderable: false, render: RenderNothing, createdCell: (cell, files) => {
+                        if(!files) return;
                         const $cell = $(cell);
-                        this.event.emit("plugin.media.match", new RegExp(`^${data._id}`), (files) => {
-                            this.autoProgramming(program, files, $cell);
+                        ['image', 'audio', 'video'].forEach(type => {
+                            if(files[type]){
+                                $cell.append($fileIcon.clone().addClass(`fa-file-${type}`).attr('title', files[type]));
+                            }
                         });
+                    }},
+                    {data: 'control', defaultContent: {}, searchable: false, orderable: false, render: RenderNothing, createdCell: (cell, control) => {
+                        if(control && control.start && control.start.length){
+                            const $cell = $(cell);
+                            $cell.addClass("control").data("control", control);
+                            $cell.append($prepare.clone());
+                            $cell.append('&nbsp;');
+                            $cell.append($play.clone());
+                        }
                     }}
                 ],
                 ajax: {
@@ -112,6 +123,9 @@ module.exports = class ProgramManager extends Plugin{
                         this.programs = programs;
                         programs.forEach(program => {
                             this.sessions.add(program.session);
+                            this.event.emit("plugin.media.match", new RegExp(`^${program._id}`), (files) => {
+                                this.autoProgramming(program, files);
+                            });
                         });
                         return programs;
                     },
@@ -123,6 +137,14 @@ module.exports = class ProgramManager extends Plugin{
                         className: 'btn btn-warning',
                         action: function (e, dt) {
                             dt.ajax.reload();
+                        }
+                    },
+                    {
+                        text: '<i class="fa fa-fw fa-unlock-alt"></i>',
+                        titleAttr: '解锁',
+                        className: 'btn btn-success',
+                        action: function (e, dt) {
+                            $(dt.table().body()).find("button").prop("disabled", false);
                         }
                     }
                 ],
