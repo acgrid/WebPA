@@ -21,7 +21,7 @@ module.exports = class ProgramManager extends Plugin{
         return 'program-manager';
     }
     unlock(){
-        this.$table.find(".btn-action").prop("disabled", false);
+        this.$table.find(".btn-prepare").prop("disabled", false);
     }
     prepare($button){
         this.$table.find(".btn-action").prop("disabled", true);
@@ -29,7 +29,11 @@ module.exports = class ProgramManager extends Plugin{
     }
     emitActions(actions){
         actions.forEach(action => {
-            if(action.event && action.data) this.event.emit(action.event, action.data);
+            if(action.event){
+                action.data = action.data || {};
+                action.data.initial = true;
+                this.event.emit(action.event, action.data);
+            }
         });
     }
     execute($button){
