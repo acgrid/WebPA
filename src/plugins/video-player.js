@@ -48,9 +48,6 @@ class VideoPlayer extends DOMPlugin{
     }
     myInit(type, main, event){
         this.event = event;
-        this.$video.on("ended", () => {
-            this.$video.addClass("hidden");
-        });
         // SANDBOX
         event.on(EVENT_SANDBOX_VIDEO_CONFIGURE, this.setVideoProps.bind(this));
         event.on(EVENT_SANDBOX_VIDEO_OPEN, (data) => {
@@ -71,6 +68,10 @@ class VideoPlayer extends DOMPlugin{
         });
         event.on(EVENT_SANDBOX_VIDEO_SEEK, (data) => {
             if(data.time) this.video.currentTime = data.time;
+        });
+        // MONITOR
+        event.on(EVENT_MONITOR_VIDEO_STOPPED, () => {
+            this.$video.addClass("hidden");
         });
         if(type === 'console'){
             event.on(EVENT_GLOBAL_VIDEO_LOCAL_CONFIGURE, this.setVideoProps.bind(this));
@@ -142,7 +143,7 @@ class VideoPlayer extends DOMPlugin{
             event.on(EVENT_GLOBAL_VIDEO_STOP, (data) => {
                 event.emit(EVENT_SANDBOX_VIDEO_STOP, data);
             });
-            this.$video.on("end", (ev) => {
+            this.$video.on("ended", (ev) => {
                 event.emit(EVENT_MONITOR_VIDEO_STOPPED, ev);
             });
             // SEEK

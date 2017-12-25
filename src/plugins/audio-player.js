@@ -140,7 +140,7 @@ class AudioPlayer extends DOMPlugin{
             event.on(EVENT_GLOBAL_AUDIO_STOP, (data) => {
                 event.emit(EVENT_SANDBOX_AUDIO_STOP, data);
             });
-            this.$audio.on("end", (ev) => {
+            this.$audio.on("ended", (ev) => {
                 event.emit(EVENT_MONITOR_AUDIO_STOPPED, ev);
             });
             // SEEK

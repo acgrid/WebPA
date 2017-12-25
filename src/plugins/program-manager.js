@@ -14,24 +14,42 @@ function RenderNothing(data, type){
 
 const $fileIcon = $('<i class="fa fa-file fa-fw"></i>');
 const $prepare = $('<button class="btn btn-action btn-prepare btn-warning btn-sm"><i class="fa fa-fw fa-exclamation" title="预备"></i></button>');
-const $play = $('<button class="btn btn-action btn-execute btn-danger btn-sm"><i class="fa fa-fw fa-play" title="执行"></i></button>');
+const $play = $('<button class="btn btn-action btn-execute btn-danger btn-sm" disabled><i class="fa fa-fw fa-play" title="执行"></i></button>');
 
 module.exports = class ProgramManager extends Plugin{
     static name(){
         return 'program-manager';
     }
+    unlock(){
+        this.$table.find(".btn-action").prop("disabled", false);
+    }
     prepare($button){
         this.$table.find(".btn-action").prop("disabled", true);
         $button.siblings('.btn-execute').prop("disabled", false);
     }
+    emitActions(actions){
+        actions.forEach(action => {
+            if(action.event && action.data) this.event.emit(action.event, action.data);
+        });
+    }
     execute($button){
         this.event.emit("debug", "Execute program");
         $button.prop("disabled", true);
-        console.log($button.closest(".control").data("control"));
+        const control = $button.closest(".control").data("control");
+        if(control){
+            if(Array.isArray(control.start)) this.emitActions(control.start);
+            if(control.listen) {
+                this.event.emit("debug", `Register stop listener: ${control.listen}`);
+                this.event.once(control.listen, () => {
+                    this.unlock();
+                    if(Array.isArray(control.stop) && control.stop.length) this.emitActions(control.stop);
+                });
+            }
+        }
     }
     autoProgramming(program, files){
         program.files = {};
-        program.control = {start: [], listen: [], stop: []};
+        program.control = {start: [], listen: null, stop: []};
         this.event.emit("plugin.program.file.select", files, program.files); // There are sync events!
         if(!program.files.image && !program.files.video && !program.files.audio) return;
         if(program.files.video && program.files.audio){
@@ -44,11 +62,11 @@ module.exports = class ProgramManager extends Plugin{
         }
         if(program.files.audio){
             program.control.start.push({event: "global.plugin.audio.open", data: {url: program.files.audio}});
-            program.control.listen.push('promise.plugin.audio.stopped');
+            program.control.listen = 'promise.plugin.audio.stopped';
         }
         if(program.files.video){
             program.control.start.push({event: "global.plugin.video.open", data: {url: program.files.video}});
-            program.control.listen.push('promise.plugin.video.stopped');
+            program.control.listen = 'promise.plugin.video.stopped';
         }
     }
     init(type, main, event) {
@@ -90,8 +108,8 @@ module.exports = class ProgramManager extends Plugin{
                         return type === 'display' ? Time.secondsToHMS(data) : data;
                     }},
                     {data: 'program.summary'},
-                    {data: 'program.actor.unit', className: "nowrap"},
-                    {data: 'program.name'},
+                    {data: 'program.actor.unit', className: "nowrap"}, // TODO open new window
+                    {data: 'program.name'}, // TODO open new window
                     {data: 'program.duration', width: "3em", render: (data, type) => {
                         return type === 'display' ? Time.secondsToMS(data) : data;
                     }},
@@ -143,8 +161,8 @@ module.exports = class ProgramManager extends Plugin{
                         text: '<i class="fa fa-fw fa-unlock-alt"></i>',
                         titleAttr: '解锁',
                         className: 'btn btn-success',
-                        action: function (e, dt) {
-                            $(dt.table().body()).find("button").prop("disabled", false);
+                        action: () => {
+                            this.unlock();
                         }
                     }
                 ],

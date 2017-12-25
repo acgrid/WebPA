@@ -43,6 +43,9 @@ class Debug extends Plugin{
         ev.on('console.started', () => {
             ev.emit("debug", "Console starting sequence completed");
         });
+        ev.on("promise.**", function(){
+            ev.emit("debug", this.event);
+        });
     }
 }
 module.exports = Debug;
