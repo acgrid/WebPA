@@ -66,33 +66,44 @@ app.use('/program/:channel', (req, res) => {
     const server = config.get('program'), channel = req.params['channel'] || "default", request = require('request-promise-native'), fs = require('fs'), path = require('path');
     const cacheFile = path.join(__dirname, 'public', 'cache', `${channel}.json`), cacheUrl = `/cache/${channel}.json`;
     const debug = require('debug')('webpa:program');
-    if(isDev){
-        debug('Bypass remote call for debug!');
-        res.redirect(302, cacheUrl);
-        return;
-    }
-    request({
-        url: `${server.url}program/${channel}`,
-        method: "GET",
-        headers: {"Authorization": server.key}
-    }).then((data) => {
-        fs.writeFile(cacheFile, data, () => {
-            debug(`Fetch remote programs data and cached to ${cacheFile}`);
+    const operation = () => {
+        request({
+            url: `${server.url}program/${channel}`,
+            method: "GET",
+            headers: {"Authorization": server.key}
+        }).then((data) => {
+            fs.writeFile(cacheFile, data, () => {
+                debug(`Fetch remote programs data and cached to ${cacheFile}`);
+            });
+            res.set('Content-Type', 'application/json');
+            res.send(data);
+        }).catch((err) => {
+            debug('Failed to fetch remote programs', err);
+            fs.access(cacheFile, fs.constants.R_OK, (err) => {
+                if(err){
+                    debug('No local cache found', err);
+                    res.json([]);
+                }else{
+                    debug(`Found local cache ${cacheFile}, redirect to it`);
+                    res.redirect(302, cacheUrl);
+                }
+            });
         });
-        res.set('Content-Type', 'application/json');
-        res.send(data);
-    }).catch((err) => {
-        debug('Failed to fetch remote programs', err);
+    };
+    if(isDev){
         fs.access(cacheFile, fs.constants.R_OK, (err) => {
             if(err){
                 debug('No local cache found', err);
-                res.json([]);
+                operation();
             }else{
+                debug('Bypass remote call for debug!');
                 debug(`Found local cache ${cacheFile}, redirect to it`);
                 res.redirect(302, cacheUrl);
             }
         });
-    });
+    }else{
+        operation();
+    }
 });
 
 // catch 404 and forward to error handler
