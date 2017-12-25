@@ -59,11 +59,11 @@ class Background extends DOM{
             event.on("console.build", () => {
                 main.createIcon(($icon) => {
                     $icon.find("i").addClass("fa-image");
-                    $icon.find("p").text("背景图片");
+                    $icon.find("p").text("背景图");
                     $icon.click(() => {
                         main.openWindow('background-setup', {
                             theme:       'primary',
-                            headerTitle: '背景图片',
+                            headerTitle: '背景图',
                             position:    'center-top 0 30',
                             contentSize: '450 250',
                             content:     this.$form.get(0)
@@ -71,6 +71,9 @@ class Background extends DOM{
                     });
                     return $icon;
                 });
+            });
+            event.on("enter", (params) => {
+                if(params.role === 'monitor') this.setUrl(this.url);
             });
             this.setUrl(this.url);
         }
