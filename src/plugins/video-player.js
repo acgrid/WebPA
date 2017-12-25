@@ -73,6 +73,27 @@ class VideoPlayer extends DOMPlugin{
         event.on(EVENT_MONITOR_VIDEO_STOPPED, () => {
             this.$video.addClass("hidden");
         });
+        this.$video.on("canplay", (ev) => {
+            event.emit(EVENT_MONITOR_VIDEO_CAN_PLAY, ev);
+        });
+        this.$video.on("playing", (ev) => {
+            event.emit(EVENT_MONITOR_VIDEO_PLAYING, ev);
+        });
+        this.$video.on("pause", (ev) => {
+            event.emit(EVENT_MONITOR_VIDEO_PAUSED, ev);
+        });
+        this.$video.on("play", (ev) => {
+            event.emit(EVENT_MONITOR_VIDEO_RESUMED, ev);
+        });
+        this.$video.on("ended", (ev) => {
+            event.emit(EVENT_MONITOR_VIDEO_STOPPED, ev);
+        });
+        this.$video.on("seeking", (ev) => {
+            event.emit(EVENT_MONITOR_VIDEO_SEEKING, ev);
+        });
+        this.$video.on("seeked", (ev) => {
+            event.emit(EVENT_MONITOR_VIDEO_SEEKED, ev);
+        });
         if(type === 'console'){
             event.on(EVENT_GLOBAL_VIDEO_LOCAL_CONFIGURE, this.setVideoProps.bind(this));
             this.$player = $(`<div class="video-player"><input type="url" class="block" id="video-url" placeholder="视频URL" />
@@ -109,9 +130,8 @@ class VideoPlayer extends DOMPlugin{
                 event.emit(EVENT_SANDBOX_VIDEO_OPEN, data);
                 this.play();
             });
-            this.$video.on("canplay", (ev) => {
+            event.on(EVENT_MONITOR_VIDEO_CAN_PLAY, () => {
                 this.$controls.prop("disabled", false);
-                event.emit(EVENT_MONITOR_VIDEO_CAN_PLAY, ev);
             });
             // PLAY
             this.$player.find("#video-play").click(() => {
@@ -120,9 +140,6 @@ class VideoPlayer extends DOMPlugin{
             event.on(EVENT_GLOBAL_VIDEO_PLAY, (data) => {
                 event.emit(EVENT_SANDBOX_VIDEO_PLAY, data);
             });
-            this.$video.on("playing", (ev) => {
-                event.emit(EVENT_MONITOR_VIDEO_PLAYING, ev);
-            });
             // PAUSE
             this.$player.find("#video-pause").click(() => {
                 this.pause();
@@ -130,21 +147,12 @@ class VideoPlayer extends DOMPlugin{
             event.on(EVENT_GLOBAL_VIDEO_PAUSE, (data) => {
                 event.emit(EVENT_SANDBOX_VIDEO_PAUSE, data);
             });
-            this.$video.on("pause", (ev) => {
-                event.emit(EVENT_MONITOR_VIDEO_PAUSED, ev);
-            });
-            this.$video.on("play", (ev) => {
-                event.emit(EVENT_MONITOR_VIDEO_RESUMED, ev);
-            });
             // STOP
             this.$player.find("#video-stop").click(() => {
                 this.stop();
             });
             event.on(EVENT_GLOBAL_VIDEO_STOP, (data) => {
                 event.emit(EVENT_SANDBOX_VIDEO_STOP, data);
-            });
-            this.$video.on("ended", (ev) => {
-                event.emit(EVENT_MONITOR_VIDEO_STOPPED, ev);
             });
             // SEEK
             this.$player.find("#video-seek").click(() => {
@@ -160,12 +168,6 @@ class VideoPlayer extends DOMPlugin{
             });
             event.on(EVENT_GLOBAL_VIDEO_SEEK, (data) => {
                 event.emit(EVENT_SANDBOX_VIDEO_SEEK, data);
-            });
-            this.$video.on("seeking", (ev) => {
-                event.emit(EVENT_MONITOR_VIDEO_SEEKING, ev);
-            });
-            this.$video.on("seeked", (ev) => {
-                event.emit(EVENT_MONITOR_VIDEO_SEEKED, ev);
             });
             // REGISTER
             ['mp4', 'mpg', 'ogg', 'mkv'].forEach((extension) => {
