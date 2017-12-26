@@ -13,6 +13,7 @@ const EVENT_SANDBOX_CAMERA_CONFIGURE = 'sandbox.camera.configure',
     EVENT_GLOBAL_CAMERA_PAUSE = 'global.plugin.camera.pause',
     EVENT_GLOBAL_CAMERA_STOP = 'global.plugin.camera.stop',
 
+    EVENT_MONITOR_CAMERA_OPENED = 'promise.plugin.camera.opened',
     EVENT_MONITOR_CAMERA_PLAYING = 'promise.plugin.camera.playing',
     EVENT_MONITOR_CAMERA_PAUSED = 'promise.plugin.camera.paused',
     EVENT_MONITOR_CAMERA_RESUMED = 'promise.plugin.camera.resumed',
@@ -67,8 +68,8 @@ class Camera extends DOMPlugin{
             if(data.deviceId && data.constraints){
                 data.constraints.deviceId = data.deviceId;
                 navigator.mediaDevices.getUserMedia({audio: false, video: data.constraints}).then(stream => {
+                    event.emit(EVENT_MONITOR_CAMERA_OPENED);
                     this.$video.removeClass("hidden");
-                    this.$controls.prop("disabled", false);
                     this.video.srcObject = stream;
                     this.play();
                 });
@@ -113,6 +114,9 @@ class Camera extends DOMPlugin{
                 this.$devices.val(data.deviceId);
                 this.$controls.prop("disabled", true);
                 event.emit(EVENT_SANDBOX_CAMERA_OPEN, data);
+            });
+            event.on(EVENT_MONITOR_CAMERA_OPENED, () => {
+                this.$controls.prop("disabled", false);
             });
             // PLAY
             this.$player.find("#camera-play").click(() => {
