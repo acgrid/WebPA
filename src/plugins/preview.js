@@ -12,6 +12,7 @@ class Preview extends Plugin{
         return 'preview';
     }
     init(type, main, event){
+        this.event = event;
         if(type === 'console'){
             this.sandbox = new Sandbox($(`<div class="sandbox"></div>`), {preview: true});
             event.on("console.started", () => {
@@ -29,7 +30,12 @@ class Preview extends Plugin{
                         close: "disable"
                     },
                     contentSize: {width:  '960px', height: '540px'},
-                    content:     this.sandbox.container.get(0)
+                    content:     this.sandbox.container.get(0),
+                    resizeit: {
+                        resize: (panel, size) => {
+                            this.event.emit('plugin.preview.resize', this.sandbox, size);
+                        }
+                    }
                 });
             });
             event.on("console.build", () => {
