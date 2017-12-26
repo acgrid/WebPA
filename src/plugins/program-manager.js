@@ -69,6 +69,10 @@ module.exports = class ProgramManager extends Plugin{
             program.control.listen = 'promise.plugin.audio.stopped';
         }
         if(program.files.video){
+            if(program.files.video.indexOf('LOOP') !== -1){
+                program.control.start.push({event: "global.plugin.video.loop", data: {loop: true}});
+                program.control.stop.push({event: "global.plugin.video.loop", data: {loop: false}});
+            }
             program.control.start.push({event: "global.plugin.video.open", data: {url: program.files.video}});
             program.control.listen = 'promise.plugin.video.stopped';
         }

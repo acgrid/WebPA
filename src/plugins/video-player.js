@@ -11,12 +11,15 @@ const EVENT_SANDBOX_VIDEO_CONFIGURE = 'sandbox.video.configure',
     EVENT_SANDBOX_VIDEO_STOP = 'sandbox.video.stop',
     EVENT_SANDBOX_VIDEO_SEEK = 'sandbox.video.seek',
 
+    // LOCAL ONLY
     EVENT_GLOBAL_VIDEO_LOCAL_CONFIGURE = 'global.plugin.video.configure',
+    // FORWARD
     EVENT_GLOBAL_VIDEO_OPEN = 'global.plugin.video.open',
     EVENT_GLOBAL_VIDEO_PLAY = 'global.plugin.video.play',
     EVENT_GLOBAL_VIDEO_PAUSE = 'global.plugin.video.pause',
     EVENT_GLOBAL_VIDEO_STOP = 'global.plugin.video.stop',
     EVENT_GLOBAL_VIDEO_SEEK = 'global.plugin.video.seek',
+    EVENT_GLOBAL_VIDEO_LOOP = 'global.plugin.video.loop',
 
     EVENT_MONITOR_VIDEO_CAN_PLAY = 'promise.plugin.video.canplay',
     EVENT_MONITOR_VIDEO_PLAYING = 'promise.plugin.video.playing',
@@ -49,7 +52,12 @@ class VideoPlayer extends DOMPlugin{
     myInit(type, main, event){
         this.event = event;
         // SANDBOX
-        event.on(EVENT_SANDBOX_VIDEO_CONFIGURE, this.setVideoProps.bind(this));
+        event.on(EVENT_SANDBOX_VIDEO_CONFIGURE, (data) => {
+            let props = {};
+            $.extend(props, data);
+            if(props.initial) delete props.initial;
+            this.setVideoProps(props);
+        });
         event.on(EVENT_SANDBOX_VIDEO_OPEN, (data) => {
             this.$video.addClass("hidden");
             if(data.url) this.$video.prop("src", data.url);
@@ -62,6 +70,7 @@ class VideoPlayer extends DOMPlugin{
             this.video.pause();
         });
         event.on(EVENT_SANDBOX_VIDEO_STOP, () => {
+            this.video.loop = false;
             this.$video.addClass("hidden");
             this.video.pause();
             this.video.currentTime = 0;
@@ -71,7 +80,7 @@ class VideoPlayer extends DOMPlugin{
         });
         // MONITOR
         event.on(EVENT_MONITOR_VIDEO_STOPPED, () => {
-            this.$video.addClass("hidden");
+            if(!this.video.loop) this.$video.addClass("hidden");
         });
         this.$video.on("canplay", (ev) => {
             event.emit(EVENT_MONITOR_VIDEO_CAN_PLAY, ev);
@@ -111,6 +120,9 @@ class VideoPlayer extends DOMPlugin{
 <p class="text-center">
 <input type="time" value="00:00" /> <button id="video-seek" class="video-after-open" disabled><i class="fa fa-fw fa-angle-double-right"></i></button>
 </p>
+<p class="text-center">
+<input type="checkbox" id="video-loop"><label for="video-loop">循环</label>
+</p>
 </div>`);
             this.$controls = this.$player.find(".video-after-open");
             this.$url = this.$player.find("input[type=url]");
@@ -118,6 +130,7 @@ class VideoPlayer extends DOMPlugin{
             this.$current = this.$player.find("#current");
             this.$total = this.$player.find("#total");
             this.$progress = this.$player.find("progress");
+            this.$loop = this.$player.find("#video-loop");
             let updateHandle;
             // OPEN
             this.$player.find("#video-open").click(() => {
@@ -168,6 +181,14 @@ class VideoPlayer extends DOMPlugin{
             });
             event.on(EVENT_GLOBAL_VIDEO_SEEK, (data) => {
                 event.emit(EVENT_SANDBOX_VIDEO_SEEK, data);
+            });
+            // LOOP
+            this.$loop.change(() => {
+                this.loop(this.$loop.prop("checked"));
+            });
+            event.on(EVENT_GLOBAL_VIDEO_LOOP, (data) => {
+                if(!data.initial) this.$loop.prop("checked", data.loop);
+                event.emit(EVENT_SANDBOX_VIDEO_CONFIGURE, data);
             });
             // REGISTER
             ['mp4', 'mpg', 'ogg', 'mkv'].forEach((extension) => {
@@ -222,6 +243,9 @@ class VideoPlayer extends DOMPlugin{
     seek(time, initial = true){
         this.event.emit(EVENT_GLOBAL_VIDEO_SEEK, {time, initial});
     }
+    loop(loop, initial = true){
+        this.event.emit(EVENT_GLOBAL_VIDEO_LOOP, {loop, initial});
+    }
     setUrlFromDOM(ev){
         this.event.emit('global.plugin.audio.stop', {initial: true});
         this.open($(ev.target).closest(".file-entry").data("url"));
@@ -242,6 +266,7 @@ class VideoPlayer extends DOMPlugin{
             this.$total.text('-');
             this.$progress.removeProp('max');
         }
+        this.$loop.prop("checked", this.video.loop);
     }
 }
 
