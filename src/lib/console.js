@@ -88,5 +88,31 @@ class Console extends Main{
         this.windows.add(name);
         return this.createWindow(params);
     }
+    confirm(question, onYes)
+    {
+        this.openWindow('confirm', {
+            theme:       'danger',
+            headerTitle: '确认',
+            position:    'center-top 0 30',
+            contentSize: '240 60',
+            content: `<div class="controls">${question || '确认要执行选定的操作？'}</div>`,
+            headerControls:{
+                minimize: "remove",
+                maximize: "remove",
+                maximize: "remove",
+            },
+            footerToolbar:
+            '<button type="button" class="btn btn-danger btn-sm jsPanel-ftr-btn btn-confirm-yes"><i class="fa fa-check"></i> 确认</button>'+
+            '<button type="button" class="btn btn-default btn-sm jsPanel-ftr-btn btn-confirm-no"><i class="fa fa-times"></i> 取消</button>',
+            callback: function (panel) {
+                $(panel.footer).on("click", "button.btn-confirm-yes", function(){
+                    panel.close();
+                    onYes();
+                }).on("click", "button.btn-confirm-no", function(){
+                    panel.close();
+                });
+            }
+        });
+    }
 }
 module.exports = Console;
