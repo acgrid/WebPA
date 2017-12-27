@@ -13,6 +13,7 @@ const Monitor = require('./lib/monitor'),
     MediaManager = require('./plugins/file-manager'),
     ProgramManager = require('./plugins/program-manager'),
     Judgement = require('./plugins/guest-judgement'),
+    Roller = require('./plugins/roll'),
     Locker = require('./plugins/locker'),
     $ = require('jquery');
 
@@ -30,6 +31,7 @@ $(function(){
             new MediaManager(),
             new ProgramManager(),
             new Judgement(),
+            new Roller(),
         ], debug = !!$body.data("debug");
     let role = $body.data('role'), main;
     // plugin dependencies are explicit via constructor

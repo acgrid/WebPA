@@ -55,6 +55,10 @@ module.exports = class ProgramManager extends Plugin{
         program.files = {};
         program.control = {start: [], listen: null, stop: []};
         this.event.emit("plugin.program.file.select", files, program.files); // There are sync events!
+        if(program.files.random){
+            program.control.start.push({event: "global.plugin.roll.url", data: {url: program.files.random}});
+            program.control.listen = 'promise.plugin.roll.hidden';
+        }
         if(!program.files.image && !program.files.video && !program.files.audio) return;
         if(program.files.video && program.files.audio){
             this.event.emit("debug", "Auto programming play video and audio is currently not supported");
@@ -127,11 +131,9 @@ module.exports = class ProgramManager extends Plugin{
                     {data: 'files', defaultContent: [], className: "nowrap", searchable: false, orderable: false, render: RenderNothing, createdCell: (cell, files) => {
                         if(!files) return;
                         const $cell = $(cell);
-                        ['image', 'audio', 'video'].forEach(type => {
-                            if(files[type]){
-                                $cell.append($fileIcon.clone().addClass(`fa-file-${type}`).attr('title', files[type]));
-                            }
-                        });
+                        for(let type in files){
+                            if(files.hasOwnProperty(type)) $cell.append($fileIcon.clone().addClass(`fa-${type} fa-file-${type}`).attr('title', files[type]));
+                        }
                     }},
                     {data: 'control', defaultContent: {}, searchable: false, orderable: false, render: RenderNothing, createdCell: (cell, control) => {
                         if(control && control.start && control.start.length){
