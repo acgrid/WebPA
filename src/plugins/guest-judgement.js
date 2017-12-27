@@ -168,7 +168,9 @@ module.exports = class PopularMeter extends CanvasPlugin{
                 setTimeout(() => {
                     if(this.state === PrepareState) this.event.emit(EVENT_GLOBAL_RUN, {run, initial: true});
                     setTimeout(() => {
-                        if(this.state === RunState) this.event.emit(EVENT_GLOBAL_DONE, {initial: true});
+                        if(this.state === RunState){
+                            this.event.emit(EVENT_GLOBAL_DONE, {initial: true});
+                        }
                     }, run * 1000);
                 }, prepare * 1000);
             });
@@ -198,18 +200,16 @@ module.exports = class PopularMeter extends CanvasPlugin{
                     for(let team in Teams) $row.find(`.${team}`).text(total ? this.sum(team) : this.query(team, phase));
                     this.$tbody.append($row);
                 }
-                if(this.state === RunState){
-                    let red = this.query('red', this.phase), blue = this.query('blue', this.phase);
-                    const total = red + blue;
-                    red = total ? Math.round(red / total * 100) : 50;
-                    blue = 100 - red;
-                    this.event.emit(SANDBOX_JUDGE_DRAW, {percent: {red, blue}, initial: true});
+                if(this.state === RunState || this.state === DoneState){
+                    this.event.emit(SANDBOX_JUDGE_DRAW, {percent: {red: this.phasePercent('red', this.phase)}, initial: true});
                 }
             });
             // CONSOLE-ONLY EVENTS
+            event.on(EVENT_GLOBAL_PREPARE, () => {
+                this.$run.prop("disabled", true);
+            });
             event.on(EVENT_GLOBAL_RUN, () => {
                 this.on().then(() => {
-                    this.$run.prop("disabled", true);
                     this.$result.prop("disabled", true);
                     this.$hide.prop("disabled", true);
                 }).catch(err => {
@@ -230,9 +230,13 @@ module.exports = class PopularMeter extends CanvasPlugin{
                 this.$hide.prop("disabled", false);
             });
             event.on(EVENT_GLOBAL_RESULT_HIDE, () => {
-                this.next();
-                this.$hide.prop("disabled", true);
-                this.$run.prop("disabled", false);
+                this.next().then(() => {
+                    this.$hide.prop("disabled", true);
+                    this.$run.prop("disabled", false);
+                }).catch(err => {
+                    console.log(err);
+                    this.main.alert('下一阶段错误！');
+                });
             });
             // UI
             event.on("console.build", () => {
@@ -377,7 +381,16 @@ module.exports = class PopularMeter extends CanvasPlugin{
             total += thisTeam;
             if(currTeam === team) myTeam = thisTeam;
         }
-        return Math.round(myTeam / total * 100);
+        return total ? Math.round(myTeam / total * 100) : 50;
+    }
+    phasePercent(team, phase){
+        let total = 0, thisTeam, myTeam;
+        for(let currTeam in Teams){
+            thisTeam = this.query(currTeam, phase);
+            total += thisTeam;
+            if(currTeam === team) myTeam = thisTeam;
+        }
+        return total ? Math.round(myTeam / total * 100) : 50;
     }
     on(){
         return new Promise((resolve, reject) => {
