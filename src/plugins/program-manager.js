@@ -129,8 +129,8 @@ module.exports = class ProgramManager extends Plugin{
                         return type === 'display' ? Time.secondsToMS(data) : data;
                     }},
                     {data: 'program.arrange.start'},
-                    {data: 'program.arrange.pa'}, // TODO add MIC indicator
-                    {data: 'program.arrange.remark'},
+                    {data: 'program.arrange.pa', orderable: false}, // TODO add MIC indicator
+                    {data: 'program.arrange.remark', orderable: false},
                     {data: 'files', defaultContent: [], className: "nowrap", searchable: false, orderable: false, render: RenderNothing, createdCell: (cell, files) => {
                         if(!files) return;
                         const $cell = $(cell);
