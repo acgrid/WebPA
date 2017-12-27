@@ -431,7 +431,7 @@ module.exports = class PopularMeter extends CanvasPlugin{
     }
     reset(){
         return new Promise((resolve, reject) => {
-            this.request('next').then(() => {
+            this.request('reset').then(() => {
                 this.phase = 0;
                 this.active = false;
                 this.scores = {};
