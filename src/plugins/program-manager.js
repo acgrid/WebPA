@@ -22,10 +22,12 @@ module.exports = class ProgramManager extends Plugin{
     }
     unlock(){
         this.$table.find(".btn-prepare").prop("disabled", false);
+        this.$table.find(".btn-execute").prop("disabled", true);
     }
     prepare($button){
         this.$table.find(".btn-action").prop("disabled", true);
         $button.siblings('.btn-execute').prop("disabled", false);
+        this.event.emit('plugin.program.prepare', $button.closest('.program-entry').data('program')); // LOCAL EVENT
     }
     emitActions(actions){
         actions.forEach(action => {
@@ -41,6 +43,7 @@ module.exports = class ProgramManager extends Plugin{
         $button.prop("disabled", true);
         const control = $button.closest(".control").data("control");
         if(control){
+            this.event.emit('plugin.program.execute', $button.closest('.program-entry').data('program')); // LOCAL EVENT
             if(Array.isArray(control.start)) this.emitActions(control.start);
             if(control.listen) {
                 this.event.emit("debug", `Register stop listener: ${control.listen}`);
@@ -196,6 +199,7 @@ module.exports = class ProgramManager extends Plugin{
                     container.prependTo($(dt.table().container()).find(".dt-buttons"));
                 },
                 createdRow: (row, data) => {
+                    data.program.id = data._id;
                     $(row).addClass("program-entry").data("program", data.program);
                 },
                 dom: 'Bfrtip',

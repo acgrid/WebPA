@@ -43,6 +43,7 @@ app.use(lessMiddleware(path.join(__dirname, 'public'), {render: {paths: [path.jo
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', require('./routes/index'));
+app.use('/light', require('./routes/light'));
 app.use(function(req, res, next){
     if(allowedIPs.indexOf(req.ip) === -1){
         res.status(403).send("Forbidden").end();

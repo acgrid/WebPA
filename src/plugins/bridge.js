@@ -58,10 +58,14 @@ class Bridge extends Plugin{
             socket.on("common", receive);
             socket.on("global", receive);
             ev.on("sandbox.**", forward);
+            ev.on("sync.**", forward);
             ev.on("global.**", forward);
         }else if(role === 'monitor'){
             ev.on("promise.**", forward);
             socket.on("sandbox", receive);
+        }else if(role === 'light'){
+            socket.on("sync", receive);
+            ev.on("promise.**", forward);
         }
         ev.on("*.starting", function(){
             socket.open();

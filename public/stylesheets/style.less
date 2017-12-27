@@ -212,3 +212,48 @@ i.lock-icon{
   text-align: center;
   text-shadow: 2px 2px 1px darkolivegreen;
 }
+body.light{
+  @program-info-height: 160px;
+  padding-top: @program-info-height;
+  .program-info{
+    background: white;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    height: @program-info-height;
+    overflow-y: auto;
+    h3{
+      font-family: Menlo, Monaco, Consolas, "Courier New", monospace;
+    }
+    strong{
+      margin-right: 0.5em;
+      &:before{
+        content: '[';
+      }
+      &:after{
+        content: ']';
+      }
+    }
+    progress{
+      width: 100%;
+    }
+  }
+  .light-sequence{
+    .past{
+      text-decoration: line-through;
+    }
+    .highlight{
+      color: red;
+      font-weight: bold;
+    }
+    .time{
+      width: 5em;
+      text-align: right;
+    }
+    .color{
+      width: 1em;
+    }
+  }
+}

@@ -3,6 +3,7 @@ if(!window) throw new Error('I am not in a browser!');
 
 const Monitor = require('./lib/monitor'),
     Console = require('./lib/console'),
+    Light = require('./lib/light'),
     Sandbox = require('./lib/sandbox'),
     Bridge = require('./plugins/bridge'),
     Background = require('./plugins/background'),
@@ -15,7 +16,14 @@ const Monitor = require('./lib/monitor'),
     Judgement = require('./plugins/guest-judgement'),
     Roller = require('./plugins/roll'),
     Locker = require('./plugins/locker'),
+    LightBoard = require('./plugins/light-board'),
     $ = require('jquery');
+
+if(typeof HTMLMediaElement.prototype.playing === 'undefined') Object.defineProperty(HTMLMediaElement.prototype, 'playing', {
+    get: function(){
+        return this.currentTime > 0 && !this.paused && !this.ended && this.readyState > 2;
+    }
+});
 
 $(function(){
     const $body = $("body"),
@@ -32,6 +40,7 @@ $(function(){
             new ProgramManager(),
             new Judgement(),
             new Roller(),
+            new LightBoard(),
         ], debug = !!$body.data("debug");
     let role = $body.data('role'), main;
     // plugin dependencies are explicit via constructor
@@ -50,6 +59,9 @@ $(function(){
         case 'monitor':
             const sandbox = new Sandbox($('.sandbox'), {preview: false});
             main = new Monitor(channel, sandbox, plugins);
+            break;
+        case 'light':
+            main = new Light(channel, plugins);
             break;
         default:
             throw new Error('No role defined in body data.');

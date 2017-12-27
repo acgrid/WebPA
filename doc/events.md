@@ -6,6 +6,7 @@ enter({channel, role})|common|enter({src, channel, role})|BCAST|TX
 ping|common|heartbeat({src, role})|BCAST|TX
 exit|common|exit({src})|BCAST|TX
 sandbox.*({})|sandbox|sandbox.*({})|TX|RX
+sync.*({})|sync|sync.*({})|TX|_Light_
 env.*({})|env|env.*({src, ...})|RX|TX
 promise.*({})|promise|promise.*({src, ...})|RX|TX
 global.*({initial, ...data})|global|global.*({})|BCAST|-

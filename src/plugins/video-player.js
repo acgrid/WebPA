@@ -267,6 +267,7 @@ class VideoPlayer extends DOMPlugin{
             this.$progress.removeProp('max');
         }
         this.$loop.prop("checked", this.video.loop);
+        if(this.video.playing) this.event.emit("plugin.media.playing", "video", current, total);
     }
 }
 

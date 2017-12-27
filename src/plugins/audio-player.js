@@ -237,6 +237,7 @@ class AudioPlayer extends DOMPlugin{
             this.$total.text('-');
             this.$progress.removeProp('max');
         }
+        if(this.audio.playing) this.event.emit("plugin.media.playing", "audio", current, total);
     }
 }
 
