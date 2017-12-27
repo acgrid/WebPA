@@ -1,5 +1,8 @@
 const CanvasPlugin = require('./canvas'),
+    eCharts = require('echarts/lib/echarts'),
     $ = require('jquery');
+
+require('echarts/lib/chart/pie');
 
 // TODO customize in the future
 const ServiceUrl = 'https://www.comitime.com/wechat/app/judgement',
@@ -14,6 +17,8 @@ const PrepareState = Symbol('prepare'),
     RunState = Symbol('run'),
     DoneState = Symbol('done'),
     ResultState = Symbol('result');
+
+const $chart = $('<div class="chart"></div>');
 
 const
     SANDBOX_JUDGE_PREPARE = 'sandbox.judge.prepare', // {prepare: 3, run: 30}
@@ -31,10 +36,15 @@ const
 module.exports = class PopularMeter extends CanvasPlugin{
     constructor(){
         super();
-        this.$dom = $('<div class="judgement-window full hidden"><canvas></canvas><div class="countdown"></div></div>');
+        this.$dom = $('<div class="judgement-window full hidden"><div class="pie-charts"></div><canvas></canvas><div class="countdown"></div></div>');
         this.canvas = this.$dom.find("canvas").get(0);
         this.context = this.canvas.getContext('2d');
+        this.$charts = this.$dom.find(".pie-charts");
         this.$countdown = this.$dom.find(".countdown");
+        this.echarts = {};
+        TotalPhases.forEach((team, index) => {
+            this.$charts.append($chart.clone().attr({"data-phase": index, "data-phase-name": team}));
+        });
     }
     static name(){
         return 'judgement';
@@ -49,6 +59,14 @@ module.exports = class PopularMeter extends CanvasPlugin{
         this.initCanvas(this.width * 0.8, this.height * 0.25);
         const countDownHeight = this.height * 0.18 + "px";
         this.$countdown.css({width: this.width * 0.13 + "px", height: this.height * 0.2 + "px", "line-height": countDownHeight, "font-size": countDownHeight});
+
+        this.redGradient = this.context.createLinearGradient(this.x(20), this.y(20), this.x(50), this.y(20));
+        this.redGradient.addColorStop(0.15, 'lightpink');
+        this.redGradient.addColorStop(1, 'red');
+
+        this.blueGradient = this.context.createLinearGradient(this.x(50), this.y(20), this.x(80), this.y(20));
+        this.blueGradient.addColorStop(0, 'blue');
+        this.blueGradient.addColorStop(0.85, 'lightblue');
     }
     myInit(type, main, event){
         this.event = event;
@@ -83,8 +101,7 @@ module.exports = class PopularMeter extends CanvasPlugin{
             this.$dom.css("background-image", 'url("http://127.0.0.1:8080/mylive2017/JudgeRun.png")');
             this.resize();
             this.countdown(data.prepare);
-            this.$dom.removeClass("hidden");
-            this.$dom.removeClass("hidden");
+            this.$dom.removeClass("hidden result");
         });
         event.on(SANDBOX_JUDGE_RUN, (data) => {
             this.countdown(data.run);
@@ -95,35 +112,14 @@ module.exports = class PopularMeter extends CanvasPlugin{
             this.context.strokeRect(this.x(20) - MeterBorderSize, this.y(20) - MeterBorderSize, this.x(MeterPercentWidth) + MeterBorderSize, this.y(MeterPercentHeight) + MeterBorderSize);
         });
         event.on(SANDBOX_JUDGE_DRAW, (data) => {
-            this.context.clearRect(this.x(20), this.y(20), this.x(MeterPercentWidth) - MeterBorderSize, this.y(MeterPercentHeight) - MeterBorderSize);
-
-            const redWidth = Math.max(5, MeterPercentWidth * data.percent.red / 100);
-            const redGradient = this.context.createLinearGradient(this.x(20), this.y(20), this.x(50), this.y(20));
-            redGradient.addColorStop(0.15, 'white');
-            redGradient.addColorStop(1, 'red');
-            this.context.fillStyle = redGradient;
-            this.context.fillRect(this.x(20), this.y(20), this.x(redWidth), this.y(MeterPercentHeight) - MeterBorderSize);
-
-            const blueWidth = MeterPercentWidth - redWidth;
-            const blueGradient = this.context.createLinearGradient(this.x(50), this.y(20), this.x(80), this.y(20));
-            blueGradient.addColorStop(0, 'blue');
-            blueGradient.addColorStop(0.85, 'white');
-            this.context.fillStyle = blueGradient;
-            this.context.fillRect(this.x(20 + redWidth), this.y(20), this.x(blueWidth), this.y(MeterPercentHeight) - MeterBorderSize);
-
-            this.context.font = `${this.y(20)}px Arial`;
-
-            this.context.fillStyle = 'red';
-            this.context.textAlign  = 'left';
-            this.context.fillText(data.percent.red + '%', this.x(22), this.y(65), this.x(5));
-
-            this.context.fillStyle = 'blue';
-            this.context.textAlign  = 'right';
-            this.context.fillText(data.percent.blue + '%', this.x(78), this.y(65), this.x(5));
+            this.meter(data.percent.red);
         });
         event.on(SANDBOX_JUDGE_RESULT_SHOW, (data) => {
-            this.$dom.css("background-image", 'url("http://127.0.0.1:8080/mylive2017/JudgeResult.png")');
-            this.$countdown.addClass("hidden");
+            this.$dom.css("background-image", 'url("http://127.0.0.1:8080/mylive2017/JudgeResult.png")').addClass("result");
+            this.meter(data.totalRed);
+            data.charts.forEach((chart, index) => {
+                this.getEChart(index).setOption(chart);
+            });
         });
         event.on(SANDBOX_JUDGE_RESULT_HIDE, (data) => {
             this.$dom.addClass("hidden");
@@ -177,7 +173,8 @@ module.exports = class PopularMeter extends CanvasPlugin{
                 }, prepare * 1000);
             });
             this.$result.click(() => {
-                this.event.emit(EVENT_GLOBAL_RESULT_SHOW, {initial: true});
+                const totalRed = this.percent('red');
+                this.event.emit(EVENT_GLOBAL_RESULT_SHOW, {totalRed, charts: this.charts(), initial: true});
             });
             this.$hide.click(() => {
                 this.event.emit(EVENT_GLOBAL_RESULT_HIDE, {initial: true});
@@ -217,16 +214,15 @@ module.exports = class PopularMeter extends CanvasPlugin{
                     this.$hide.prop("disabled", true);
                 }).catch(err => {
                     console.log(err);
-                    alert('启动错误！');
+                    alert('启动错误！'); // TODO unblock
                 });
             });
             event.on(EVENT_GLOBAL_DONE, () => {
                 this.off().then(() => {
                     this.$result.prop("disabled", false);
-                    this.next();
                 }).catch(err => {
                     console.log(err);
-                    alert('结束错误！');
+                    alert('结束错误！'); // TODO unblock
                 });
             });
             event.on(EVENT_GLOBAL_RESULT_SHOW, () => {
@@ -234,6 +230,7 @@ module.exports = class PopularMeter extends CanvasPlugin{
                 this.$hide.prop("disabled", false);
             });
             event.on(EVENT_GLOBAL_RESULT_HIDE, () => {
+                this.next();
                 this.$hide.prop("disabled", true);
                 this.$run.prop("disabled", false);
             });
@@ -267,6 +264,28 @@ module.exports = class PopularMeter extends CanvasPlugin{
                 $(window).resize(this.resize.bind(this));
             });
         }
+    }
+    meter(redPercent){
+        const bluePercent = 100 - redPercent;
+        this.context.clearRect(this.x(20), this.y(20), this.x(MeterPercentWidth) - MeterBorderSize, this.y(MeterPercentHeight) - MeterBorderSize);
+
+        const redWidth = Math.max(5, MeterPercentWidth * redPercent / 100);
+        this.context.fillStyle = this.redGradient;
+        this.context.fillRect(this.x(20), this.y(20), this.x(redWidth), this.y(MeterPercentHeight) - MeterBorderSize);
+
+        const blueWidth = MeterPercentWidth - redWidth;
+        this.context.fillStyle = this.blueGradient;
+        this.context.fillRect(this.x(20 + redWidth), this.y(20), this.x(blueWidth), this.y(MeterPercentHeight) - MeterBorderSize);
+
+        this.context.font = `${this.y(20)}px Arial`;
+
+        this.context.fillStyle = 'red';
+        this.context.textAlign  = 'left';
+        this.context.fillText(redPercent + '%', this.x(22), this.y(65), this.x(5));
+
+        this.context.fillStyle = 'blue';
+        this.context.textAlign  = 'right';
+        this.context.fillText(bluePercent + '%', this.x(78), this.y(65), this.x(5));
     }
     countdown(left){
         if(left <= 0) return;
@@ -314,6 +333,43 @@ module.exports = class PopularMeter extends CanvasPlugin{
     sum(team){
         return Array.isArray(this.scores[team]) ? this.scores[team].reduce((sum, value) => sum + value, 0) : 0;
     }
+    getEChart(phase){
+        if(!this.echarts[phase]){
+            this.echarts[phase] = eCharts.init(this.$charts.find(`.chart[data-phase=${phase}]`).get(0));
+        }
+        return this.echarts[phase];
+    }
+    charts(){
+        const charts = [];
+        for(let phase = 0; phase <= this.phase; phase++){
+            charts.push({
+                series: {
+                    type: "pie",
+                    radius: '80%',
+                    data: this.round(phase),
+                    label: {
+                        normal: {
+                            show: true,
+                            position: 'inside',
+                            formatter: '{d}%',
+                            color: 'white',
+                            fontSize: "20"
+                        }
+                    },
+                },
+                animationDuration: 2000,
+                animationDelay: 500 * phase
+            });
+        }
+        return charts;
+    }
+    round(phase){
+        const data = [];
+        for(let team in Teams){
+            data.push({value: this.query(team, phase), name: Teams[team], itemStyle: {normal: {color: team}, emphasis: {color: team}}});
+        }
+        return data;
+    }
     percent(team){
         let total = 0, thisTeam, myTeam;
         for(let currTeam in Teams){
@@ -321,7 +377,7 @@ module.exports = class PopularMeter extends CanvasPlugin{
             total += thisTeam;
             if(currTeam === team) myTeam = thisTeam;
         }
-        return Math.round(thisTeam / total * 100);
+        return Math.round(myTeam / total * 100);
     }
     on(){
         return new Promise((resolve, reject) => {
