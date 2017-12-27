@@ -115,7 +115,7 @@ class VideoPlayer extends DOMPlugin{
 <button id="video-forward" class="video-after-open" disabled><i class="fa fa-2x fa-fw fa-forward"></i></button>
 </p>
 <p class="text-center">
-<progress></progress>&nbsp;<span id="current">-</span>/<span id="total"></span>
+<progress></progress>&nbsp;<span class="current">-</span>/<span class="total"></span>
 </p>
 <p class="text-center">
 <input type="time" value="00:00" /> <button id="video-seek" class="video-after-open" disabled><i class="fa fa-fw fa-angle-double-right"></i></button>
@@ -127,8 +127,8 @@ class VideoPlayer extends DOMPlugin{
             this.$controls = this.$player.find(".video-after-open");
             this.$url = this.$player.find("input[type=url]");
             this.$time = this.$player.find("input[type=time]");
-            this.$current = this.$player.find("#current");
-            this.$total = this.$player.find("#total");
+            this.$current = this.$player.find(".current");
+            this.$total = this.$player.find(".total");
             this.$progress = this.$player.find("progress");
             this.$loop = this.$player.find("#video-loop");
             let updateHandle;

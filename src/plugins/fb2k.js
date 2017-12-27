@@ -43,7 +43,7 @@ module.exports = class FB2K extends Plugin{
 <button id="fb2k-stop"><i class="fa fa-2x fa-fw fa-stop"></i></button>
 </p>
 <p class="text-center">
-<progress></progress><span id="current">-</span>/<span id="total"></span>
+<progress></progress><span class="current">-</span>/<span class="total"></span>
 <input type="time" value="00:00" /> <button id="fb2k-seek"><i class="fa fa-fw fa-angle-double-right"></i></button>
 </p>
 <p class="text-center status"></p>
@@ -61,8 +61,8 @@ module.exports = class FB2K extends Plugin{
             this.$play = this.$player.find("#fb2k-play");
             this.$pause = this.$player.find("#fb2k-pause");
             this.$stop = this.$player.find("#fb2k-stop");
-            this.$current = this.$player.find("#current");
-            this.$total = this.$player.find("#total");
+            this.$current = this.$player.find(".current");
+            this.$total = this.$player.find(".total");
             this.$progress = this.$player.find("progress");
             this.$status = this.$player.find(".status");
             this.$path = this.$player.find(".path");

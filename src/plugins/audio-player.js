@@ -82,7 +82,7 @@ class AudioPlayer extends DOMPlugin{
 <button id="audio-forward" class="audio-after-open" disabled><i class="fa fa-2x fa-fw fa-forward"></i></button>
 </p>
 <p class="text-center">
-<progress></progress>&nbsp;<span id="current">-</span>/<span id="total"></span>
+<progress></progress>&nbsp;<span class="current">-</span>/<span class="total"></span>
 </p>
 <p class="text-center">
 <input type="time" value="00:00" /> <button id="audio-seek" class="audio-after-open" disabled><i class="fa fa-fw fa-angle-double-right"></i></button>
@@ -91,8 +91,8 @@ class AudioPlayer extends DOMPlugin{
             this.$controls = this.$player.find(".audio-after-open");
             this.$url = this.$player.find("input[type=url]");
             this.$time = this.$player.find("input[type=time]");
-            this.$current = this.$player.find("#current");
-            this.$total = this.$player.find("#total");
+            this.$current = this.$player.find(".current");
+            this.$total = this.$player.find(".total");
             this.$progress = this.$player.find("progress");
             let updateHandle;
             // OPEN
