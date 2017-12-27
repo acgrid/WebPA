@@ -98,7 +98,7 @@ class Console extends Main{
             content: `<div class="controls">${question || '确认要执行选定的操作？'}</div>`,
             headerControls:{
                 minimize: "remove",
-                maximize: "remove",
+                normalize: "remove",
                 maximize: "remove",
             },
             footerToolbar:
@@ -111,6 +111,23 @@ class Console extends Main{
                 }).on("click", "button.btn-confirm-no", function(){
                     panel.close();
                 });
+            }
+        });
+    }
+    alert(content, headerTitle = '提示', theme = 'danger')
+    {
+        content = `<div class="controls">${content}</div>`;
+        this.openWindow('alert', {
+            theme,
+            headerTitle,
+            content,
+            autoclose: 2000,
+            position:    'center-top 0 30',
+            contentSize: '300 60',
+            headerControls:{
+                minimize: "remove",
+                normalize: "remove",
+                maximize: "remove",
             }
         });
     }

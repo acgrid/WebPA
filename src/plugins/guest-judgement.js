@@ -214,7 +214,7 @@ module.exports = class PopularMeter extends CanvasPlugin{
                     this.$hide.prop("disabled", true);
                 }).catch(err => {
                     console.log(err);
-                    alert('启动错误！'); // TODO unblock
+                    this.main.alert('启动错误！');
                 });
             });
             event.on(EVENT_GLOBAL_DONE, () => {
@@ -222,7 +222,7 @@ module.exports = class PopularMeter extends CanvasPlugin{
                     this.$result.prop("disabled", false);
                 }).catch(err => {
                     console.log(err);
-                    alert('结束错误！'); // TODO unblock
+                    this.main.alert('结束错误！');
                 });
             });
             event.on(EVENT_GLOBAL_RESULT_SHOW, () => {
