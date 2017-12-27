@@ -35,7 +35,7 @@ const
 
 module.exports = class PopularMeter extends CanvasPlugin{
     constructor(){
-        super();
+        super('judgment');
         this.$dom = $('<div class="judgement-window full hidden"><div class="pie-charts"></div><canvas></canvas><div class="countdown"></div></div>');
         this.canvas = this.$dom.find("canvas").get(0);
         this.context = this.canvas.getContext('2d');
