@@ -17,6 +17,7 @@ const EVENT_SANDBOX_AUDIO_CONFIGURE = 'sandbox.audio.configure',
     EVENT_GLOBAL_AUDIO_PAUSE = 'global.plugin.audio.pause',
     EVENT_GLOBAL_AUDIO_STOP = 'global.plugin.audio.stop',
     EVENT_GLOBAL_AUDIO_SEEK = 'global.plugin.audio.seek',
+    EVENT_GLOBAL_AUDIO_LOOP = 'global.plugin.audio.loop',
 
     EVENT_MONITOR_AUDIO_CAN_PLAY = 'promise.plugin.audio.canplay',
     EVENT_MONITOR_AUDIO_PLAYING = 'promise.plugin.audio.playing',
@@ -64,6 +65,7 @@ class AudioPlayer extends DOMPlugin{
         });
         event.on(EVENT_SANDBOX_AUDIO_STOP, () => {
             this.$audio.addClass("hidden");
+            this.audio.loop = false;
             this.audio.pause();
             this.audio.currentTime = 0;
         });
@@ -82,6 +84,9 @@ class AudioPlayer extends DOMPlugin{
 <button id="audio-forward" class="audio-after-open" disabled><i class="fa fa-2x fa-fw fa-forward"></i></button>
 </p>
 <p class="text-center">
+<input type="checkbox" id="audio-loop"><label for="audio-loop">循环</label>
+</p>
+<p class="text-center">
 <progress></progress>&nbsp;<span class="current">-</span>/<span class="total"></span>
 </p>
 <p class="text-center">
@@ -94,6 +99,7 @@ class AudioPlayer extends DOMPlugin{
             this.$current = this.$player.find(".current");
             this.$total = this.$player.find(".total");
             this.$progress = this.$player.find("progress");
+            this.$loop = this.$player.find("#audio-loop");
             let updateHandle;
             // OPEN
             this.$player.find("#audio-open").click(() => {
@@ -164,6 +170,14 @@ class AudioPlayer extends DOMPlugin{
             this.$audio.on("seeked", (ev) => {
                 event.emit(EVENT_MONITOR_AUDIO_SEEKED, ev);
             });
+            // LOOP
+            this.$loop.change(() => {
+                this.loop(this.$loop.prop("checked"));
+            });
+            event.on(EVENT_GLOBAL_AUDIO_LOOP, (data) => {
+                if(!data.initial) this.$loop.prop("checked", data.loop);
+                event.emit(EVENT_SANDBOX_AUDIO_CONFIGURE, data);
+            });
             // REGISTER
             ['mp3', 'flac', 'wav', 'ogg'].forEach((extension) => {
                 event.on(`plugin.file.icon.${extension}`, setFileIcon);
@@ -217,6 +231,9 @@ class AudioPlayer extends DOMPlugin{
     seek(time, initial = true){
         this.event.emit(EVENT_GLOBAL_AUDIO_SEEK, {time, initial});
     }
+    loop(loop, initial = true){
+        this.event.emit(EVENT_GLOBAL_AUDIO_LOOP, {loop, initial});
+    }
     setUrlFromDOM(ev){
         this.event.emit('global.plugin.video.stop', {initial: true});
         this.open($(ev.target).closest(".file-entry").data("url"));
@@ -237,6 +254,7 @@ class AudioPlayer extends DOMPlugin{
             this.$total.text('-');
             this.$progress.removeProp('max');
         }
+        this.$loop.prop("checked", this.audio.loop);
         if(this.audio.playing) this.event.emit("plugin.media.playing", "audio", current, total);
     }
 }
