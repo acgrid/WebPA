@@ -32,6 +32,7 @@ class Console extends Main{
             ev.emit("console.build");
         });
         this.windows = new Set();
+        this.panels = new Map();
     }
     get channel(){
         return this.data.channel;
@@ -74,7 +75,10 @@ class Console extends Main{
         return this.windows.has(name);
     }
     openWindow(name, params){
-        if(this.hasWindow(name)) return; // created already
+        if(this.hasWindow(name)){
+            this.panels.get(name).front(); // created already
+            return;
+        }
         if(typeof params === "function") params = params() || null;
         if(!params) return;
         params.id = name;
@@ -86,7 +90,9 @@ class Console extends Main{
             }
         }
         this.windows.add(name);
-        return this.createWindow(params);
+        const panel = this.createWindow(params);
+        this.panels.set(name, panel);
+        return panel;
     }
     confirm(question, onYes)
     {
