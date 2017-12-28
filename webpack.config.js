@@ -10,7 +10,6 @@ const webpack = require('webpack'),
         $: 'jquery',
         jQuery: 'jquery',
         'window.jQuery': 'jquery',
-        Popper: ['popper.js', 'default'],
     })],
     entry = {app: ['./src/index.js']};
 

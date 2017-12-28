@@ -3,7 +3,8 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "nodemon -e js,json,twig,jpg,png --ignore src/ ./bin/www"
+    "start": "nodemon -e js,json,twig,jpg,png --ignore src/ ./bin/www",
+    "build": "webpack"
   },
   "dependencies": {
     "body-parser": "~1.18.2",
