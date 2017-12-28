@@ -93,6 +93,8 @@ module.exports = class ProgramManager extends Plugin{
         this.event = event;
         this.sessions = new Set();
         if(type === 'console'){
+            this.$musicStart = $('<b></b>');
+            this.$mic = $('<b class="mic"></b>');
             this.$manager = $(`
 <div class="program-manager window-padding-top">
 <table class="table table-bordered table-responsive table-striped table-condensed table-hover scroll">
@@ -105,7 +107,7 @@ module.exports = class ProgramManager extends Plugin{
 <th>名义</th>
 <th>名称</th>
 <th>时长</th>
-<th class="nowrap">时序</th>
+<th>音麦序</th>
 <th>PA</th>
 <th>备注</th>
 <th>文件</th>
@@ -131,8 +133,14 @@ module.exports = class ProgramManager extends Plugin{
                     {data: 'program.duration', width: "3em", render: (data, type) => {
                         return type === 'display' ? Time.secondsToMS(data) : data;
                     }},
-                    {data: 'program.arrange.start', orderable: false},
-                    {data: 'program.arrange.pa', orderable: false}, // TODO add MIC indicator
+                    {data: 'program.arrange.mic', className: "nowrap", searchable: false, orderable: false, render: RenderNothing, createdCell: (cell, mic, row) => {
+                            const $cell = $(cell);
+                            if(row.program.arrange.start) $cell.append(this.$musicStart.clone().text(`${row.program.arrange.start}`));
+                            if(Array.isArray(mic)) mic.forEach((user, index) => {
+                                if(user) $cell.append(this.$mic.clone().attr('title', user).text(String.fromCharCode(9312 + index)));
+                            });
+                        }},
+                    {data: 'program.arrange.pa', orderable: false},
                     {data: 'program.arrange.remark', orderable: false},
                     {data: 'files', defaultContent: [], className: "nowrap", searchable: false, orderable: false, render: RenderNothing, createdCell: (cell, files) => {
                         if(!files) return;
