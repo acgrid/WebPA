@@ -44,7 +44,7 @@ class Debug extends Plugin{
             ev.emit("debug", "Console starting sequence completed");
         });
         ev.on("promise.**", function(){
-            ev.emit("debug", this.event);
+            //ev.emit("debug", this.event);
         });
         ev.on("enter", (params) => {
             ev.emit("debug", `Endpoint ${params.src} entered ${params.channel} as ${params.role}`);

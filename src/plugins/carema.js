@@ -94,7 +94,6 @@ class Camera extends DOMPlugin{
         });
         event.on(EVENT_SANDBOX_CAMERA_PREVIEW, (data) => {
             if(type === 'monitor'){
-                console.log(data);
                 this.previewState = data.state;
                 this.$video.toggleClass("hidden", this.previewState);
             }

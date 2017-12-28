@@ -80,7 +80,6 @@ class VideoPlayer extends DOMPlugin{
             if(data.time) this.video.currentTime = data.time;
         });
         event.on(EVENT_SANDBOX_VIDEO_TOGGLE, (data) => {
-            console.log(data);
             this.$video.toggleClass('hidden', !data.toggle);
         });
         // MONITOR

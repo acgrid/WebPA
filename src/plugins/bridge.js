@@ -18,7 +18,7 @@ class Bridge extends Plugin{
             socket.emit(name, params);
         }, forward = function(params = {}){
             const name = this.event, type = name.substr(0, name.indexOf('.'));
-            ev.emit("debug", `Test forwarding event ${name} with ${JSON.stringify(params)}`);
+            //ev.emit("debug", `Test forwarding event ${name} with ${JSON.stringify(params)}`);
             if(type === 'sandbox'){
                 if(params.initial){
                     delete params.initial;
