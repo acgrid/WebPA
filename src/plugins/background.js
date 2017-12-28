@@ -4,7 +4,9 @@ const DOM = require('./dom'),
 const
     EVENT_GLOBAL_UPDATE_URL = "global.plugin.background.update",
     EVENT_GLOBAL_UPDATE_POP = "global.plugin.background.pop",
+    EVENT_GLOBAL_HIDE = "global.plugin.background.hide",
     EVENT_SANDBOX_UPDATE_URL = "sandbox.background.image.update",
+    EVENT_SANDBOX_HIDE = "sandbox.background.image.hide",
     STORAGE_BACKGROUND_URL = "plugin.background.url";
 
 const FileType = /png|jpe?g|gif/i;
@@ -31,15 +33,20 @@ class Background extends DOM{
         this.event = event;
         this.stack = [];
         event.on(EVENT_SANDBOX_UPDATE_URL, (data) => {
-            this.$dom.css("background-image", data.url ? `url("${data.url}")` : "");
+            this.$dom.removeClass("hidden").css("background-image", data.url ? `url("${data.url}")` : "");
+        });
+        event.on(EVENT_SANDBOX_HIDE, () => {
+            this.$dom.addClass('hidden');
         });
         if(type === 'console'){
             this.url = Storage.get(STORAGE_BACKGROUND_URL, `http://127.0.0.1:8080/${main.channel}/KV.png`);
-            this.$form = $(`<form><input type="url" class="block" id="background-image-url" /><button>设定</button></form>`);
+            this.$form = $(`<div class="controls"><div><input type="url" class="form-control" id="background-image-url" /></div><div class="btn-group window-padding-top"><button class="btn btn-primary" id="bg-set"><i class="fa fa-fw fa-eye"></i></button><button class="btn btn-danger" id="bg-hide"><i class="fa fa-fw fa-eye-slash"></i></button></div></div>`);
             this.$url = this.$form.find("input");
-            this.$form.find("button").click((ev) => {
-                ev.preventDefault();
+            this.$form.find("#bg-set").click(() => {
                 this.setUrl(this.$url.val());
+            });
+            this.$form.find("#bg-hide").click(ev => {
+                this.hide();
             });
             event.on(EVENT_GLOBAL_UPDATE_URL, (data) => {
                 const url = data.url || "";
@@ -49,6 +56,9 @@ class Background extends DOM{
             });
             event.on(EVENT_GLOBAL_UPDATE_POP, (data) => {
                 this.resetUrl(data.initial || true);
+            });
+            event.on(EVENT_GLOBAL_HIDE, (data) => {
+                event.emit(EVENT_SANDBOX_HIDE, data);
             });
             // Register processor
             event.on("plugin.file.icon.*", setFileIcon);
@@ -86,6 +96,9 @@ class Background extends DOM{
     setUrl(url, initial = true){
         if(initial) this.stack.push(url);
         this.event.emit(EVENT_GLOBAL_UPDATE_URL, {url, initial});
+    }
+    hide(initial = true){
+        this.event.emit(EVENT_GLOBAL_HIDE, {initial});
     }
     resetUrl(initial = true){
         if(this.stack.length > 1){
