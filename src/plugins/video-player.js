@@ -41,7 +41,7 @@ class VideoPlayer extends DOMPlugin{
     }
     constructor(){
         super('video');
-        this.$video = $(`<video class="full hidden"></video>`);
+        this.$video = $(`<video class="full hidden" preload="auto"></video>`);
         this.video = this.$video.get(0);
     }
     createDOM(){
@@ -62,6 +62,8 @@ class VideoPlayer extends DOMPlugin{
         event.on(EVENT_SANDBOX_VIDEO_OPEN, (data) => {
             this.$video.addClass("hidden");
             if(data.url) this.$video.prop("src", data.url);
+            this.$video.prop('autoplay', data.autoplay);
+            if(data.autoplay) this.$video.removeClass("hidden");
         });
         event.on(EVENT_SANDBOX_VIDEO_PLAY, () => {
             this.$video.removeClass("hidden");
@@ -148,8 +150,8 @@ class VideoPlayer extends DOMPlugin{
                 const url = data.url || "";
                 this.$url.val(url);
                 this.$controls.prop("disabled", true);
+                if(typeof data.autoplay === 'undefined') data.autoplay = true;
                 event.emit(EVENT_SANDBOX_VIDEO_OPEN, data);
-                this.play();
             });
             event.on(EVENT_MONITOR_VIDEO_CAN_PLAY, () => {
                 this.$controls.prop("disabled", false);
@@ -243,8 +245,8 @@ class VideoPlayer extends DOMPlugin{
             });
         }
     }
-    open(url, initial = true){
-        this.event.emit(EVENT_GLOBAL_VIDEO_OPEN, {url, initial});
+    open(url, autoplay = true, initial = true){
+        this.event.emit(EVENT_GLOBAL_VIDEO_OPEN, {url, autoplay, initial});
     }
     play(initial = true){
         this.event.emit(EVENT_GLOBAL_VIDEO_PLAY, {initial});

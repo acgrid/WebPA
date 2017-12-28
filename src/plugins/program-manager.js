@@ -28,6 +28,8 @@ module.exports = class ProgramManager extends Plugin{
         this.$table.find(".btn-action").prop("disabled", true);
         $button.siblings('.btn-execute').prop("disabled", false);
         this.event.emit('plugin.program.prepare', $button.closest('.program-entry').data('program')); // LOCAL EVENT
+        const control = $button.closest(".control").data("control");
+        if(control && Array.isArray(control.prepare)) this.emitActions(control.prepare);
     }
     emitActions(actions){
         actions.forEach(action => {
@@ -56,7 +58,7 @@ module.exports = class ProgramManager extends Plugin{
     }
     autoProgramming(program, files){
         program.files = {};
-        program.control = {start: [], listen: null, stop: []};
+        program.control = {prepare: [], start: [], listen: null, stop: []};
         this.event.emit("plugin.program.file.select", files, program.files); // There are sync events!
         if(program.files.random){
             program.control.start.push({event: "global.plugin.roll.url", data: {url: program.files.random}});
@@ -80,7 +82,8 @@ module.exports = class ProgramManager extends Plugin{
                 program.control.start.push({event: "global.plugin.video.loop", data: {loop: true}});
                 program.control.stop.push({event: "global.plugin.video.loop", data: {loop: false}});
             }
-            program.control.start.push({event: "global.plugin.video.open", data: {url: program.files.video}});
+            program.control.prepare.push({event: "global.plugin.video.open", data: {url: program.files.video, autoplay: false}});
+            program.control.start.push({event: "global.plugin.video.play", data: {}});
             program.control.listen = 'promise.plugin.video.stopped';
         }
     }
