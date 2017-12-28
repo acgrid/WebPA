@@ -10,6 +10,7 @@ const EVENT_SANDBOX_VIDEO_CONFIGURE = 'sandbox.video.configure',
     EVENT_SANDBOX_VIDEO_PAUSE = 'sandbox.video.pause',
     EVENT_SANDBOX_VIDEO_STOP = 'sandbox.video.stop',
     EVENT_SANDBOX_VIDEO_SEEK = 'sandbox.video.seek',
+    EVENT_SANDBOX_VIDEO_TOGGLE = 'sandbox.video.toggle',
 
     // LOCAL ONLY
     EVENT_GLOBAL_VIDEO_LOCAL_CONFIGURE = 'global.plugin.video.configure',
@@ -78,6 +79,10 @@ class VideoPlayer extends DOMPlugin{
         event.on(EVENT_SANDBOX_VIDEO_SEEK, (data) => {
             if(data.time) this.video.currentTime = data.time;
         });
+        event.on(EVENT_SANDBOX_VIDEO_TOGGLE, (data) => {
+            console.log(data);
+            this.$video.toggleClass('hidden', !data.toggle);
+        });
         // MONITOR
         event.on(EVENT_MONITOR_VIDEO_STOPPED, () => {
             if(!this.video.loop) this.$video.addClass("hidden");
@@ -113,6 +118,8 @@ class VideoPlayer extends DOMPlugin{
 <button id="video-stop" class="video-after-open" disabled><i class="fa fa-2x fa-fw fa-stop"></i></button>
 <button id="video-backward" class="video-after-open" disabled><i class="fa fa-2x fa-fw fa-backward"></i></button>
 <button id="video-forward" class="video-after-open" disabled><i class="fa fa-2x fa-fw fa-forward"></i></button>
+<button id="video-show"><i class="fa fa-2x fa-fw fa-eye"></i></button>
+<button id="video-hide"><i class="fa fa-2x fa-fw fa-eye-slash"></i></button>
 </p>
 <p class="text-center">
 <progress></progress>&nbsp;<span class="current">-</span>/<span class="total"></span>
@@ -131,6 +138,8 @@ class VideoPlayer extends DOMPlugin{
             this.$total = this.$player.find(".total");
             this.$progress = this.$player.find("progress");
             this.$loop = this.$player.find("#video-loop");
+            this.$show = this.$player.find("#video-show");
+            this.$hide = this.$player.find("#video-hide");
             let updateHandle;
             // OPEN
             this.$player.find("#video-open").click(() => {
@@ -189,6 +198,13 @@ class VideoPlayer extends DOMPlugin{
             event.on(EVENT_GLOBAL_VIDEO_LOOP, (data) => {
                 if(!data.initial) this.$loop.prop("checked", data.loop);
                 event.emit(EVENT_SANDBOX_VIDEO_CONFIGURE, data);
+            });
+            // TOGGLE (NO LOCAL CHANGES NOW)
+            this.$show.click(() => {
+                event.emit(EVENT_SANDBOX_VIDEO_TOGGLE, {toggle: true, initial: true});
+            });
+            this.$hide.click(() => {
+                event.emit(EVENT_SANDBOX_VIDEO_TOGGLE, {toggle: false, initial: true});
             });
             // REGISTER
             ['mp4', 'mpg', 'ogg', 'mkv'].forEach((extension) => {
