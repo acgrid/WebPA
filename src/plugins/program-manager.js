@@ -21,10 +21,13 @@ module.exports = class ProgramManager extends Plugin{
         return 'program-manager';
     }
     unlock(){
+        this.locked = false;
         this.$table.find(".btn-prepare").prop("disabled", false);
         this.$table.find(".btn-execute").prop("disabled", true);
     }
     prepare($button){
+        $button.closest("tr").click();
+        this.locked = true;
         this.$table.find(".btn-action").prop("disabled", true);
         $button.siblings('.btn-execute').prop("disabled", false);
         this.event.emit('plugin.program.prepare', $button.closest('.program-entry').data('program')); // LOCAL EVENT
@@ -97,6 +100,7 @@ module.exports = class ProgramManager extends Plugin{
         this.event = event;
         this.sessions = new Set();
         if(type === 'console'){
+            this.locked = false;
             this.$musicStart = $('<b></b>');
             this.$mic = $('<b class="mic"></b>');
             this.$manager = $(`
@@ -181,7 +185,8 @@ module.exports = class ProgramManager extends Plugin{
                         text: '<i class="fa fa-fw fa-sync"></i>',
                         titleAttr: '同步',
                         className: 'btn btn-warning',
-                        action: function (e, dt) {
+                        action: (e, dt) => {
+                            this.locked = false;
                             dt.ajax.reload();
                         }
                     },
@@ -222,6 +227,11 @@ module.exports = class ProgramManager extends Plugin{
                 that.prepare($(this));
             }).on("click", ".btn-execute", function(){
                 that.execute($(this));
+            }).on("click", "tr.program-entry", function(){
+                if(!that.locked){
+                    that.$table.find("tr.highlight").removeClass("highlight");
+                    $(this).addClass("highlight");
+                }
             });
             event.on("console.build", () => {
                 main.createIcon(($icon) => {
