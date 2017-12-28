@@ -229,7 +229,7 @@ class VideoPlayer extends DOMPlugin{
                             theme:       'info',
                             headerTitle: '视频播放',
                             position:    'center-top 0 30',
-                            contentSize: '640 300',
+                            contentSize: '640 210',
                             content:     this.$player.get(0)
                         });
                     });

@@ -69,6 +69,9 @@ class Camera extends DOMPlugin{
         event.on(EVENT_SANDBOX_CAMERA_OPEN, (data) => {
             this.$video.addClass("hidden");
             if(data.deviceId && data.constraints){
+                if(data.position){
+                    this.$video.closest('.layer').css(data.position);
+                }
                 data.constraints.deviceId = data.deviceId;
                 navigator.mediaDevices.getUserMedia({audio: false, video: data.constraints}).then(stream => {
                     event.emit(EVENT_MONITOR_CAMERA_OPENED);
@@ -100,14 +103,24 @@ class Camera extends DOMPlugin{
             event.on(EVENT_GLOBAL_CAMERA_LOCAL_CONFIGURE, this.setVideoProps.bind(this));
             this.$player = $(`<div class="camera-player">
 <select id="camera-select" class="block"></select>
-<p class="text-center"><label for="camera-width">宽</label><input type="number" id="camera-width" value="1920" />x<label for="camera-height">高</label><input type="number" id="camera-height" value="1080" /></p>
-<p class="text-center">
+<p class="text-center window-padding-all">
 <button id="camera-open"><i class="fa fa-2x fa-fw fa-folder-open"></i></button>
 <button id="camera-play" class="camera-after-open" disabled><i class="fa fa-2x fa-fw fa-play"></i></button>
 <button id="camera-pause" class="camera-after-open" disabled><i class="fa fa-2x fa-fw fa-pause"></i></button>
 <button id="camera-stop" class="camera-after-open" disabled><i class="fa fa-2x fa-fw fa-stop"></i></button>
 </p>
 <p class="text-center"><input type="checkbox" id="video-preview" /><label for="video-preview">仅预览</label></p>
+<div class="row window-padding-all">
+<div class="col-lg-offset-3 col-lg-3"><input type="number" id="camera-width" class="form-control" value="1920" placeholder="Width" /></div>
+<div class="col-lg-3"><input type="number" id="camera-height" class="form-control" value="1080" placeholder="Height" /></div>
+</div>
+<div class="row window-padding-all">
+<div class="col-lg-3"><input type="number" id="camera-pos-left" value="0" min="0" max="100" placeholder="Left%" class="form-control" /></div>
+<div class="col-lg-3"><input type="number" id="camera-pos-top" value="0" min="0" max="100" placeholder="Top%" class="form-control" /></div>
+<div class="col-lg-3"><input type="number" id="camera-pos-width" value="100" min="0" max="100" placeholder="Width%" class="form-control" /></div>
+<div class="col-lg-3"><input type="number" id="camera-pos-height" value="100" min="0" max="100" placeholder="Height%" class="form-control" /></div>
+</div>
+
 </div>`);
             this.$controls = this.$player.find(".camera-after-open");
             this.$deviceOption = $('<option></option>');
@@ -115,12 +128,21 @@ class Camera extends DOMPlugin{
             this.$width = this.$player.find("#camera-width");
             this.$height = this.$player.find("#camera-height");
             this.$preview = this.$player.find("#video-preview");
+            this.$posLeft = this.$player.find("#camera-pos-left");
+            this.$posTop = this.$player.find("#camera-pos-top");
+            this.$posWidth = this.$player.find("#camera-pos-width");
+            this.$posHeight = this.$player.find("#camera-pos-height");
             ensureUserMedia("videoinput", (device) => {
                 this.$devices.append(this.$deviceOption.clone().attr("value", device.deviceId).text(device.label));
             });
             // OPEN
             this.$player.find("#camera-open").click(() => {
-                this.open(this.$devices.val(), { width: this.$width.val() || 1920, height: this.$height.val() || 1080 });
+                this.open(this.$devices.val(), { width: this.$width.val() || 1920, height: this.$height.val() || 1080 }, {
+                    left: this.$posLeft.val() + '%',
+                    top: this.$posTop.val() + '%',
+                    width: this.$posWidth.val() + '%',
+                    height: this.$posHeight.val() + '%',
+                });
             });
             event.on(EVENT_GLOBAL_CAMERA_OPEN, (data) => {
                 this.$devices.val(data.deviceId);
@@ -176,11 +198,11 @@ class Camera extends DOMPlugin{
                     $icon.find("i").addClass("fa-camera");
                     $icon.find("p").text("视频捕捉");
                     $icon.click(() => {
-                        main.openWindow('video-player', {
+                        main.openWindow('camera-player', {
                             theme:       'info',
                             headerTitle: '视频捕捉',
-                            position:    'center-top 0 30',
-                            contentSize: '640 300',
+                            position:    'left-top 0 150',
+                            contentSize: '640 210',
                             content:     this.$player.get(0)
                         });
                     });
@@ -189,8 +211,8 @@ class Camera extends DOMPlugin{
             });
         }
     }
-    open(deviceId, constraints = {}, initial = true){
-        this.event.emit(EVENT_GLOBAL_CAMERA_OPEN, {deviceId, constraints, initial});
+    open(deviceId, constraints = {}, position = {}, initial = true){
+        this.event.emit(EVENT_GLOBAL_CAMERA_OPEN, {deviceId, constraints, position, initial});
     }
     play(initial = true){
         this.event.emit(EVENT_GLOBAL_CAMERA_PLAY, {initial});
