@@ -52,7 +52,7 @@ class Camera extends DOMPlugin{
     }
     constructor(){
         super('camera');
-        this.$video = $(`<video class="full hidden"></video>`);
+        this.$video = $(`<video class="full hidden" muted></video>`);
         this.video = this.$video.get(0);
     }
     createDOM(){
