@@ -6,12 +6,14 @@ const EVENT_SANDBOX_CAMERA_CONFIGURE = 'sandbox.camera.configure',
     EVENT_SANDBOX_CAMERA_PLAY = 'sandbox.camera.play',
     EVENT_SANDBOX_CAMERA_PAUSE = 'sandbox.camera.pause',
     EVENT_SANDBOX_CAMERA_STOP = 'sandbox.camera.stop',
+    EVENT_SANDBOX_CAMERA_PREVIEW = 'sandbox.camera.preview',
 
     EVENT_GLOBAL_CAMERA_LOCAL_CONFIGURE = 'global.plugin.camera.configure',
     EVENT_GLOBAL_CAMERA_OPEN = 'global.plugin.camera.open',
     EVENT_GLOBAL_CAMERA_PLAY = 'global.plugin.camera.play',
     EVENT_GLOBAL_CAMERA_PAUSE = 'global.plugin.camera.pause',
     EVENT_GLOBAL_CAMERA_STOP = 'global.plugin.camera.stop',
+    EVENT_GLOBAL_CAMERA_PREVIEW = 'global.plugin.camera.preview',
 
     EVENT_MONITOR_CAMERA_OPENED = 'promise.plugin.camera.opened',
     EVENT_MONITOR_CAMERA_PLAYING = 'promise.plugin.camera.playing',
@@ -61,6 +63,7 @@ class Camera extends DOMPlugin{
     }
     myInit(type, main, event){
         this.event = event;
+        this.previewState = false;
         // SANDBOX
         event.on(EVENT_SANDBOX_CAMERA_CONFIGURE, this.setVideoProps.bind(this));
         event.on(EVENT_SANDBOX_CAMERA_OPEN, (data) => {
@@ -69,14 +72,14 @@ class Camera extends DOMPlugin{
                 data.constraints.deviceId = data.deviceId;
                 navigator.mediaDevices.getUserMedia({audio: false, video: data.constraints}).then(stream => {
                     event.emit(EVENT_MONITOR_CAMERA_OPENED);
-                    this.$video.removeClass("hidden");
+                    this.$video.toggleClass("hidden", this.previewState);
                     this.video.srcObject = stream;
                     this.play();
                 });
             }
         });
         event.on(EVENT_SANDBOX_CAMERA_PLAY, () => {
-            this.$video.removeClass("hidden");
+            this.$video.toggleClass("hidden", this.previewState);
             this.video.play();
         });
         event.on(EVENT_SANDBOX_CAMERA_PAUSE, () => {
@@ -85,6 +88,13 @@ class Camera extends DOMPlugin{
         event.on(EVENT_SANDBOX_CAMERA_STOP, () => {
             this.$video.addClass("hidden");
             this.video.srcObject.getVideoTracks()[0].stop();
+        });
+        event.on(EVENT_SANDBOX_CAMERA_PREVIEW, (data) => {
+            if(type === 'monitor'){
+                console.log(data);
+                this.previewState = data.state;
+                this.$video.toggleClass("hidden", this.previewState);
+            }
         });
         if(type === 'console'){
             event.on(EVENT_GLOBAL_CAMERA_LOCAL_CONFIGURE, this.setVideoProps.bind(this));
@@ -97,12 +107,14 @@ class Camera extends DOMPlugin{
 <button id="camera-pause" class="camera-after-open" disabled><i class="fa fa-2x fa-fw fa-pause"></i></button>
 <button id="camera-stop" class="camera-after-open" disabled><i class="fa fa-2x fa-fw fa-stop"></i></button>
 </p>
+<p class="text-center"><input type="checkbox" id="video-preview" /><label for="video-preview">仅预览</label></p>
 </div>`);
             this.$controls = this.$player.find(".camera-after-open");
             this.$deviceOption = $('<option></option>');
             this.$devices = this.$player.find("select");
             this.$width = this.$player.find("#camera-width");
             this.$height = this.$player.find("#camera-height");
+            this.$preview = this.$player.find("#video-preview");
             ensureUserMedia("videoinput", (device) => {
                 this.$devices.append(this.$deviceOption.clone().attr("value", device.deviceId).text(device.label));
             });
@@ -151,6 +163,13 @@ class Camera extends DOMPlugin{
             this.$video.on("end", (ev) => {
                 event.emit(EVENT_MONITOR_CAMERA_STOPPED, ev);
             });
+            // PREVIEW
+            this.$preview.change(() => {
+                this.preview(this.$preview.prop("checked"));
+            });
+            event.on(EVENT_GLOBAL_CAMERA_PREVIEW, (data) => {
+                event.emit(EVENT_SANDBOX_CAMERA_PREVIEW, data);
+            });
             // UI
             event.on("console.build", () => {
                 main.createIcon(($icon) => {
@@ -181,6 +200,9 @@ class Camera extends DOMPlugin{
     }
     stop(initial = true){
         this.event.emit(EVENT_GLOBAL_CAMERA_STOP, {initial});
+    }
+    preview(state, initial = true){
+        this.event.emit(EVENT_GLOBAL_CAMERA_PREVIEW, {state, initial});
     }
 }
 
