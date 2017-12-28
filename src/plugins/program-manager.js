@@ -105,7 +105,7 @@ module.exports = class ProgramManager extends Plugin{
 <th>名义</th>
 <th>名称</th>
 <th>时长</th>
-<th>时序</th>
+<th class="nowrap">时序</th>
 <th>PA</th>
 <th>备注</th>
 <th>文件</th>
@@ -120,18 +120,18 @@ module.exports = class ProgramManager extends Plugin{
                 order: [[0, 'asc']],
                 autoWidth: false,
                 columns: [
-                    {data: {_: "sort", display: "_id", filter: "_id"}, width: "30px"},
+                    {data: {_: "sort", display: "_id", filter: "_id"}, width: "30px", className: "nowrap text-right bold"},
                     {data: "session", "visible": false},
                     {data: 'program.clock', width: "3em", render: (data, type) => {
                         return type === 'display' ? Time.secondsToHMS(data) : data;
                     }},
                     {data: 'program.summary'},
                     {data: 'program.actor.unit', className: "nowrap"}, // TODO open new window
-                    {data: 'program.name'}, // TODO open new window
+                    {data: 'program.name', className: "nowrap"}, // TODO open new window
                     {data: 'program.duration', width: "3em", render: (data, type) => {
                         return type === 'display' ? Time.secondsToMS(data) : data;
                     }},
-                    {data: 'program.arrange.start'},
+                    {data: 'program.arrange.start', orderable: false},
                     {data: 'program.arrange.pa', orderable: false}, // TODO add MIC indicator
                     {data: 'program.arrange.remark', orderable: false},
                     {data: 'files', defaultContent: [], className: "nowrap", searchable: false, orderable: false, render: RenderNothing, createdCell: (cell, files) => {
@@ -141,7 +141,7 @@ module.exports = class ProgramManager extends Plugin{
                             if(files.hasOwnProperty(type)) $cell.append($fileIcon.clone().addClass(`fa-${type} fa-file-${type}`).attr('title', files[type]));
                         }
                     }},
-                    {data: 'control', defaultContent: {}, searchable: false, orderable: false, render: RenderNothing, createdCell: (cell, control) => {
+                    {data: 'control', defaultContent: {}, className: "nowrap", searchable: false, orderable: false, render: RenderNothing, createdCell: (cell, control) => {
                         if(control && control.start && control.start.length){
                             const $cell = $(cell);
                             $cell.addClass("control").data("control", control);
