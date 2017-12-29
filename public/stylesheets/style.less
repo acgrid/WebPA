@@ -172,11 +172,16 @@ i.lock-icon{
   position: relative;
   background: black center center no-repeat;
   background-size: contain;
-  canvas{
+  div.progress{
     position: absolute;
     left: 10%;
+    width: 80%;
     text-align: center;
     top: 30%;
+    border-radius: 2em;
+    div.progress-bar{
+      background-repeat: repeat;
+    }
   }
   .pie-charts{
     display: none;
@@ -189,6 +194,8 @@ i.lock-icon{
       display: inline-block;
       width: 20%;
       height: 100%;
+      background: center center no-repeat;
+      background-size: contain;
     }
   }
   .countdown{
@@ -201,8 +208,10 @@ i.lock-icon{
     text-shadow: 2px 2px 1px black;
   }
   &.result{
-    canvas{
-      top: 60%;
+    div.progress{
+      width: 60%;
+      top: 70%;
+      left: 20%;
     }
     .pie-charts{
       display: initial;

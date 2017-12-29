@@ -1,4 +1,4 @@
-const CanvasPlugin = require('./canvas'),
+const DOMPlugin = require('./dom'),
     eCharts = require('echarts/lib/echarts'),
     $ = require('jquery');
 
@@ -9,7 +9,6 @@ const ServiceUrl = 'https://www.comitime.com/wechat/app/judgement',
     ServiceKey = '6Wkt1hTSkOput2QSc7S9756u2LpMUMDdiztSrenU',
     MeterPercentWidth = 60,
     MeterPercentHeight = 80,
-    MeterBorderSize = 2,
     TotalPhases = ['先锋', '次锋', '中坚', '副将', '大将'],
     Teams = {red: '红方', blue: '蓝方'};
 
@@ -19,7 +18,6 @@ const PrepareState = Symbol('prepare'),
     ResultState = Symbol('result');
 
 const $chart = $('<div class="chart"></div>');
-
 const
     SANDBOX_JUDGE_PREPARE = 'sandbox.judge.prepare', // {prepare: 3, run: 30}
     SANDBOX_JUDGE_RUN = 'sandbox.judge.run',
@@ -33,21 +31,35 @@ const
     EVENT_GLOBAL_RESULT_SHOW = 'global.plugin.judge.result.show',
     EVENT_GLOBAL_RESULT_HIDE = 'global.plugin.judge.result.hide';
 
-module.exports = class PopularMeter extends CanvasPlugin{
+module.exports = class PopularMeter extends DOMPlugin{
     constructor(){
         super('judgment');
-        this.$dom = $('<div class="judgement-window full hidden"><div class="pie-charts"></div><canvas></canvas><div class="countdown"></div></div>');
-        this.canvas = this.$dom.find("canvas").get(0);
-        this.context = this.canvas.getContext('2d');
+        this.$dom = $(`
+<div class="judgement-window full hidden">
+<div class="pie-charts"></div>
+<div class="progress">
+    <div class="progress-bar progress-bar-danger red progress-bar-striped active" text-left></div>
+    <div class="progress-bar progress-bar-primary blue progress-bar-striped active text-right"></div>
+</div>
+<div class="countdown"></div>
+</div>        
+`);
+        this.$meter = this.$dom.find(".progress");
+        this.$red = this.$dom.find(".red");
+        this.$blue = this.$dom.find(".blue");
         this.$charts = this.$dom.find(".pie-charts");
         this.$countdown = this.$dom.find(".countdown");
-        this.echarts = {};
-        TotalPhases.forEach((team, index) => {
-            this.$charts.append($chart.clone().attr({"data-phase": index, "data-phase-name": team}));
-        });
+        this.empty();
     }
     static name(){
         return 'judgement';
+    }
+    empty(){
+        this.echarts = {};
+        this.$charts.empty();
+        TotalPhases.forEach((team, index) => {
+            this.$charts.append($chart.clone().attr({"data-phase": index, "data-phase-name": team}).css("background-image", `url('/judge/${index}.png')`));
+        });
     }
     createDOM(){
         return this.$dom;
@@ -56,17 +68,11 @@ module.exports = class PopularMeter extends CanvasPlugin{
         const $sandbox = this.$dom.closest('.sandbox');
         this.width = $sandbox.width();
         this.height = $sandbox.height();
-        this.initCanvas(this.width * 0.8, this.height * 0.25);
         const countDownHeight = this.height * 0.18 + "px";
+        const percentHeight = this.height * 0.15 + "px";
         this.$countdown.css({width: this.width * 0.13 + "px", height: this.height * 0.2 + "px", "line-height": countDownHeight, "font-size": countDownHeight});
-
-        this.redGradient = this.context.createLinearGradient(this.x(20), this.y(20), this.x(50), this.y(20));
-        this.redGradient.addColorStop(0.15, 'lightpink');
-        this.redGradient.addColorStop(1, 'red');
-
-        this.blueGradient = this.context.createLinearGradient(this.x(50), this.y(20), this.x(80), this.y(20));
-        this.blueGradient.addColorStop(0, 'blue');
-        this.blueGradient.addColorStop(0.85, 'lightblue');
+        this.$meter.css({height: percentHeight});
+        this.$meter.find(".progress-bar").css({"font-size": this.height * 0.15 + "px", lineHeight: percentHeight});
     }
     myInit(type, main, event){
         this.event = event;
@@ -102,14 +108,11 @@ module.exports = class PopularMeter extends CanvasPlugin{
             this.resize();
             this.countdown(data.prepare);
             this.$dom.removeClass("hidden result");
+            this.$meter.addClass("hidden");
         });
         event.on(SANDBOX_JUDGE_RUN, (data) => {
             this.countdown(data.run);
-            this.context.clearRect(0, 0, this.x(100), this.y(100));
-            this.context.lineWidth = MeterBorderSize;
-            this.context.fillStyle = 'white';
-            this.context.strokeStyle = 'yellow';
-            this.context.strokeRect(this.x(20) - MeterBorderSize, this.y(20) - MeterBorderSize, this.x(MeterPercentWidth) + MeterBorderSize, this.y(MeterPercentHeight) + MeterBorderSize);
+            this.$meter.removeClass("hidden");
         });
         event.on(SANDBOX_JUDGE_DRAW, (data) => {
             this.meter(data.percent.red);
@@ -271,25 +274,10 @@ module.exports = class PopularMeter extends CanvasPlugin{
     }
     meter(redPercent){
         const bluePercent = 100 - redPercent;
-        this.context.clearRect(this.x(20), this.y(20), this.x(MeterPercentWidth) - MeterBorderSize, this.y(MeterPercentHeight) - MeterBorderSize);
-
-        const redWidth = Math.max(5, MeterPercentWidth * redPercent / 100);
-        this.context.fillStyle = this.redGradient;
-        this.context.fillRect(this.x(20), this.y(20), this.x(redWidth), this.y(MeterPercentHeight) - MeterBorderSize);
-
-        const blueWidth = MeterPercentWidth - redWidth;
-        this.context.fillStyle = this.blueGradient;
-        this.context.fillRect(this.x(20 + redWidth), this.y(20), this.x(blueWidth), this.y(MeterPercentHeight) - MeterBorderSize);
-
-        this.context.font = `${this.y(20)}px Arial`;
-
-        this.context.fillStyle = 'red';
-        this.context.textAlign  = 'left';
-        this.context.fillText(redPercent + '%', this.x(22), this.y(65), this.x(5));
-
-        this.context.fillStyle = 'blue';
-        this.context.textAlign  = 'right';
-        this.context.fillText(bluePercent + '%', this.x(78), this.y(65), this.x(5));
+        const redText = `${redPercent}%`;
+        const blueText = `${bluePercent}%`;
+        this.$red.css("width", redText).text(redText);
+        this.$blue.css("width", blueText).text(blueText);
     }
     countdown(left){
         if(left <= 0) return;
@@ -361,6 +349,7 @@ module.exports = class PopularMeter extends CanvasPlugin{
                         }
                     },
                 },
+                stillShowZeroSum: false,
                 animationDuration: 2000,
                 animationDelay: 500 * phase
             });
@@ -448,6 +437,11 @@ module.exports = class PopularMeter extends CanvasPlugin{
                 this.phase = 0;
                 this.active = false;
                 this.scores = {};
+                for(let index in this.echarts){
+                    this.echarts[index].dispose();
+                    delete this.echarts[index];
+                }
+                this.empty();
                 this.event.emit("plugin.judgement.reset", this.active, this.phase, this.scores);
                 this.event.emit("plugin.judgement.sync.done", this.active, this.phase, this.scores);
                 resolve();
