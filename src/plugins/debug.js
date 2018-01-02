@@ -5,6 +5,7 @@ class Debug extends Plugin{
         return 'debug';
     }
     init(type, main, ev){
+        this.main = main;
         if(type === 'console'){
             const $dom = $('<textarea class="full"></textarea>'), createParam = () => {
                 return {
@@ -19,7 +20,6 @@ class Debug extends Plugin{
             ev.on("debug", function(info){
                 $dom.val(info + "\n" + $dom.val());
             });
-            this.main = main;
             ev.on("console.build", () => {
                 main.createIcon(($icon) => {
                     $icon.find("i").addClass("fa-terminal");
@@ -31,6 +31,9 @@ class Debug extends Plugin{
                 });
             });
         }else{
+            ev.on('monitor.started', () => {
+                this.main.sandbox.container.off("contextmenu");
+            });
             ev.on("**", function(...args){
                 console.debug(this.event, ...args);
             });

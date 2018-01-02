@@ -19,6 +19,9 @@ class Monitor extends Main{
     start(){
         super.start((ev) => {
             ev.emit("sandbox.create", this.data.sandbox);
+            this.sandbox.container.contextmenu(e => {
+                e.preventDefault();
+            })
         });
     }
     stop(){
