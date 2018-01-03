@@ -18,6 +18,7 @@ const Monitor = require('./lib/monitor'),
     Locker = require('./plugins/locker'),
     LightBoard = require('./plugins/light-board'),
     Images = require('./plugins/image'),
+    Reorder = require('./plugins/reorder'),
     $ = require('jquery');
 
 if(typeof HTMLMediaElement.prototype.playing === 'undefined') Object.defineProperty(HTMLMediaElement.prototype, 'playing', {
@@ -32,6 +33,7 @@ $(function(){
         plugins = [
             new Bridge(),
             new Locker(),
+            new Reorder(),
             new Background(),
             new Images(),
             new VideoPlayer(),

@@ -1,4 +1,5 @@
 const $ = require('jquery'),
+    event = require('../lib/event'),
     layers = new WeakMap(),
     layerStacks = new WeakMap(),
     options = new WeakMap(),
@@ -13,6 +14,21 @@ class Sandbox{
         options.set(this, option);
         layers.set(this, {});
         layerStacks.set(this, []);
+        event.on('sandbox.layers.get', (result) => {
+            if(Array.isArray(result)){
+                for(let layer in this.layers){
+                    if(this.layers.hasOwnProperty(layer)) result[this.layers[layer].css('z-index')] = layer;
+                }
+            }
+        });
+        event.on('sandbox.layers.set', (data) => {
+            if(typeof data.layer === 'string' && typeof data.index === 'number'){
+                this.overlay(data.layer, data.index);
+            }
+        });
+        event.on('sandbox.layers.restore', () => {
+            this.restore();
+        });
     }
     get container(){
         return containers.get(this);
@@ -44,6 +60,9 @@ class Sandbox{
         }
         return layer;
     }
+    overlay(layerName, zIndex){
+        this.get(layerName).css("z-index", zIndex);
+    }
     top(layerName){
         return this.get(layerName).css("z-index", 99999);
     }
@@ -52,8 +71,8 @@ class Sandbox{
     }
     restore(){
         const stack = this.stack;
-        for(let layer of this.layers){
-            layer.css("z-index", stack.indexOf(layer));
+        for(let layer in this.layers){
+            if(this.layers.hasOwnProperty(layer)) this.layers[layer].css("z-index", stack.indexOf(this.layers[layer]));
         }
     }
     show(layerName){

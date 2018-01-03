@@ -75,6 +75,7 @@ class Console extends Main{
         return this.windows.has(name);
     }
     openWindow(name, params){
+        ev.emit(`console.window.show.${name}`);
         if(this.hasWindow(name)){
             this.panels.get(name).front(); // created already
             return;

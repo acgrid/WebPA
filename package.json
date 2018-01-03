@@ -29,6 +29,7 @@
     "serve-favicon": "~2.4.5",
     "socket.io": "^2.0.4",
     "socket.io-client": "^2.0.4",
+    "sortablejs": "^1.7.0",
     "twig": "~0.10.3",
     "webpack": "^3.10.0"
   },
