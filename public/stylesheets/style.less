@@ -241,6 +241,21 @@ i.lock-icon{
     background: #66ccff;
   }
 }
+.songs-info{
+  height: 100%;
+  overflow-y: auto;
+  dt{
+    color: @brand-primary;
+  }
+  dd{
+    padding-left: 4em;
+    &[lang]:before{
+      content: attr(lang) ": ";
+      color: gray;
+      font-size: 0.8em;
+    }
+  }
+}
 body.light{
   @program-info-height: 160px;
   padding-top: @program-info-height;

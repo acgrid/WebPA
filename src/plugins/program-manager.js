@@ -1,5 +1,6 @@
 const Plugin = require('./base'),
     Time = require('../lib/time'),
+    SongFields = require('./song-fields'),
     $ = require('jquery');
 
 /**
@@ -103,6 +104,10 @@ module.exports = class ProgramManager extends Plugin{
             this.locked = false;
             this.$musicStart = $('<b></b>');
             this.$mic = $('<b class="mic"></b>');
+            this.$songs = $(`<div class="songs-info window-padding-all scroll"></div>`);
+            this.$song = $(`<div class="song-info"><dl></dl></div>`);
+            this.$dt = $('<dt></dt>');
+            this.$dd = $('<dd></dd>');
             this.$manager = $(`
 <div class="program-manager window-padding-top">
 <table class="table table-bordered table-responsive table-striped table-condensed table-hover scroll">
@@ -137,7 +142,9 @@ module.exports = class ProgramManager extends Plugin{
                     }},
                     {data: 'program.summary'},
                     {data: 'program.actor.unit', className: "nowrap"}, // TODO open new window
-                    {data: 'program.name', className: "nowrap"}, // TODO open new window
+                    {data: 'program.name', className: "nowrap", createdCell: (cell, name, row) => {
+                            if(Array.isArray(row.program.songs) && row.program.songs.length) $(cell).wrapInner('<a href="javascript:" class="songs"></a>')
+                        }},
                     {data: 'program.duration', width: "3em", render: (data, type) => {
                         return type === 'display' ? Time.secondsToMS(data) : data;
                     }},
@@ -231,6 +238,45 @@ module.exports = class ProgramManager extends Plugin{
                 if(!that.locked){
                     that.$table.find("tr.highlight").removeClass("highlight");
                     $(this).addClass("highlight");
+                }
+            });
+            this.$manager.on("click", "a.songs", (ev) => {
+                const songs = $(ev.currentTarget).closest('tr').data('program').songs;
+                console.log(songs);
+                this.$songs.empty();
+                songs.forEach(song => {
+                    const $song = this.$song.clone(), $songItems = $song.find('dl');
+                    Object.keys(SongFields).forEach(field => {
+                        if(song[field]){
+                            const addTitle = () => {
+                                $songItems.append(this.$dt.clone().text(SongFields[field]));
+                            };
+                            if(Array.isArray(song[field]) && song[field].length){
+                                addTitle();
+                                song[field].forEach(item => {
+                                    $songItems.append(this.$dd.clone().text(item));
+                                });
+                            }else if($.isPlainObject(song[field])){
+                                const languages = Object.keys(song[field]);
+                                if(languages.length){
+                                    addTitle();
+                                    languages.forEach(lang => {
+                                        if(song[field][lang]) $songItems.append(this.$dd.clone().attr("lang", lang).text(song[field][lang]));
+                                    });
+                                }
+                            }
+                        }
+                    });
+                    this.$songs.append($song);
+                });
+                if(Array.isArray(songs) && songs.length){
+                    main.openWindow('program-song-detail', {
+                        theme:       'info',
+                        headerTitle: '曲目详情',
+                        position:    'center-top 0 30',
+                        contentSize: '300 720',
+                        content:     this.$songs.get(0)
+                    });
                 }
             });
             event.on("console.build", () => {
