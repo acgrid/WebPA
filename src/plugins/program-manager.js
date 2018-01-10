@@ -1,6 +1,7 @@
 const Plugin = require('./base'),
     Time = require('../lib/time'),
     SongFields = require('./song-fields'),
+    ActorFields = require('./actor-fields'),
     $ = require('jquery');
 
 /**
@@ -11,6 +12,10 @@ const Plugin = require('./base'),
  */
 function RenderNothing(data, type){
     return type === 'display' ? '' : data;
+}
+
+function isNonEmptyArray(value){
+    return Array.isArray(value) && value.length > 0;
 }
 
 const $fileIcon = $('<i class="fa fa-file fa-fw"></i>');
@@ -104,8 +109,10 @@ module.exports = class ProgramManager extends Plugin{
             this.locked = false;
             this.$musicStart = $('<b></b>');
             this.$mic = $('<b class="mic"></b>');
-            this.$songs = $(`<div class="songs-info window-padding-all scroll"></div>`);
+            this.$songs = $(`<div class="songs-info indent-dl window-padding-all auto-scroll"></div>`);
             this.$song = $(`<div class="song-info"><dl></dl></div>`);
+            this.$actor = $(`<div class="actor-info indent-dl window-padding-all auto-scroll"><dl></dl></div>`);
+            this.$actorList = this.$actor.find('dl');
             this.$dt = $('<dt></dt>');
             this.$dd = $('<dd></dd>');
             this.$manager = $(`
@@ -141,9 +148,12 @@ module.exports = class ProgramManager extends Plugin{
                         return type === 'display' ? Time.secondsToHMS(data) : data;
                     }},
                     {data: 'program.summary'},
-                    {data: 'program.actor.unit', className: "nowrap"}, // TODO open new window
+                    {data: 'program.actor.unit', className: "nowrap", createdCell: (cell, unit, row) => {
+                        const actor = row.program.actor;
+                        if(isNonEmptyArray(actor.person) || isNonEmptyArray(actor.contacts) || isNonEmptyArray(actor.performers)) $(cell).wrapInner('<a href="javascript:" class="actor"></a>');
+                        }},
                     {data: 'program.name', className: "nowrap", createdCell: (cell, name, row) => {
-                            if(Array.isArray(row.program.songs) && row.program.songs.length) $(cell).wrapInner('<a href="javascript:" class="songs"></a>')
+                            if(isNonEmptyArray(row.program.songs)) $(cell).wrapInner('<a href="javascript:" class="songs"></a>');
                         }},
                     {data: 'program.duration', width: "3em", render: (data, type) => {
                         return type === 'display' ? Time.secondsToMS(data) : data;
@@ -242,34 +252,33 @@ module.exports = class ProgramManager extends Plugin{
             });
             this.$manager.on("click", "a.songs", (ev) => {
                 const songs = $(ev.currentTarget).closest('tr').data('program').songs;
-                console.log(songs);
-                this.$songs.empty();
-                songs.forEach(song => {
-                    const $song = this.$song.clone(), $songItems = $song.find('dl');
-                    Object.keys(SongFields).forEach(field => {
-                        if(song[field]){
-                            const addTitle = () => {
-                                $songItems.append(this.$dt.clone().text(SongFields[field]));
-                            };
-                            if(Array.isArray(song[field]) && song[field].length){
-                                addTitle();
-                                song[field].forEach(item => {
-                                    $songItems.append(this.$dd.clone().text(item));
-                                });
-                            }else if($.isPlainObject(song[field])){
-                                const languages = Object.keys(song[field]);
-                                if(languages.length){
+                if(isNonEmptyArray(songs)){
+                    this.$songs.empty();
+                    songs.forEach(song => {
+                        const $song = this.$song.clone(), $songItems = $song.find('dl');
+                        Object.keys(SongFields).forEach(field => {
+                            if(song[field]){
+                                const addTitle = () => {
+                                    $songItems.append(this.$dt.clone().text(SongFields[field]));
+                                };
+                                if(isNonEmptyArray(song[field])){
                                     addTitle();
-                                    languages.forEach(lang => {
-                                        if(song[field][lang]) $songItems.append(this.$dd.clone().attr("lang", lang).text(song[field][lang]));
+                                    song[field].forEach(item => {
+                                        $songItems.append(this.$dd.clone().text(item));
                                     });
+                                }else if($.isPlainObject(song[field])){
+                                    const languages = Object.keys(song[field]);
+                                    if(languages.length){
+                                        addTitle();
+                                        languages.forEach(lang => {
+                                            if(song[field][lang]) $songItems.append(this.$dd.clone().attr("lang", lang).text(song[field][lang]));
+                                        });
+                                    }
                                 }
                             }
-                        }
+                        });
+                        this.$songs.append($song);
                     });
-                    this.$songs.append($song);
-                });
-                if(Array.isArray(songs) && songs.length){
                     main.openWindow('program-song-detail', {
                         theme:       'info',
                         headerTitle: '曲目详情',
@@ -278,6 +287,26 @@ module.exports = class ProgramManager extends Plugin{
                         content:     this.$songs.get(0)
                     });
                 }
+            });
+            this.$manager.on("click", "a.actor", (ev) => {
+                const actor = $(ev.currentTarget).closest('tr').data('program').actor;
+                this.$actorList.empty();
+                this.$actorList.append(this.$dt.clone().text('名称'), this.$dd.clone().text(actor.unit));
+                Object.keys(ActorFields).forEach(field => {
+                    if(isNonEmptyArray(actor[field])){
+                        this.$actorList.append(this.$dt.clone().text(ActorFields[field]));
+                        actor[field].forEach(item => {
+                            this.$actorList.append(this.$dd.clone().text(item));
+                        })
+                    }
+                });
+                main.openWindow('program-actor-detail', {
+                    theme:       'info',
+                    headerTitle: '名义详情',
+                    position:    'left-center 0 30',
+                    contentSize: '300 400',
+                    content:     this.$actor.get(0)
+                });
             });
             event.on("console.build", () => {
                 main.createIcon(($icon) => {
