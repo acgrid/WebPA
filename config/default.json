@@ -21,5 +21,10 @@
   "program": {
     "url": "http://127.0.0.1:4000/",
     "key": "your key here"
+  },
+  "api": {
+    "prefix": "https://www.comitime.com/api",
+    "credential": "1:ALL",
+    "key": ""
   }
 }
