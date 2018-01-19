@@ -37,7 +37,11 @@
     "mic": [
       null, "X", "Y", null
     ],
-    "remark": ""
+    "remark": "",
+    "hints": {
+      "announce": false,
+      "lyric": false
+    }
   },
   "actions": [
     {"action": "background.push", "ext": "png"},
