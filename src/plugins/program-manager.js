@@ -73,10 +73,15 @@ module.exports = class ProgramManager extends Plugin{
             program.control.start.push({event: "global.plugin.roll.url", data: {url: program.files.random}});
             program.control.listen = 'promise.plugin.roll.hidden';
         }
-        if(!program.files.image && !program.files.video && !program.files.audio) return;
-        if(program.files.video && program.files.audio){
-            this.event.emit("debug", "Auto programming play video and audio is currently not supported");
-            return;
+        if(program.files.video){
+            if(program.files.video.indexOf('LOOP') !== -1){
+                program.control.start.push({event: "global.plugin.video.loop", data: {loop: true}});
+                program.control.stop.push({event: "global.plugin.video.loop", data: {loop: false}});
+            }
+            program.control.prepare.push({event: "global.plugin.video.open", data: {url: program.files.video, autoplay: false}});
+            program.control.start.push({event: "global.plugin.video.play", data: {}});
+            program.control.listen = 'promise.plugin.video.stopped';
+            return; // Skip image & audio if video is found
         }
         if(program.files.image){
             program.control.start.push({event: "global.plugin.background.update", data: {url: program.files.image}});
@@ -89,15 +94,6 @@ module.exports = class ProgramManager extends Plugin{
             }
             program.control.start.push({event: "global.plugin.audio.open", data: {url: program.files.audio}});
             program.control.listen = 'promise.plugin.audio.stopped';
-        }
-        if(program.files.video){
-            if(program.files.video.indexOf('LOOP') !== -1){
-                program.control.start.push({event: "global.plugin.video.loop", data: {loop: true}});
-                program.control.stop.push({event: "global.plugin.video.loop", data: {loop: false}});
-            }
-            program.control.prepare.push({event: "global.plugin.video.open", data: {url: program.files.video, autoplay: false}});
-            program.control.start.push({event: "global.plugin.video.play", data: {}});
-            program.control.listen = 'promise.plugin.video.stopped';
         }
     }
     init(type, main, event) {
