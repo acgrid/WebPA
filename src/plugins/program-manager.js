@@ -60,6 +60,7 @@ module.exports = class ProgramManager extends Plugin{
                 this.event.emit("debug", `Register stop listener: ${control.listen}`);
                 this.event.once(control.listen, () => {
                     this.unlock();
+                    this.event.emit('plugin.program.finish');
                     if(Array.isArray(control.stop) && control.stop.length) this.emitActions(control.stop);
                 });
             }
@@ -189,6 +190,7 @@ module.exports = class ProgramManager extends Plugin{
                             this.event.emit("plugin.media.match", new RegExp(`^${program._id}`), (files) => {
                                 this.autoProgramming(program, files);
                             });
+                            this.event.emit("plugin.program.configure", program);
                         });
                         return programs;
                     },

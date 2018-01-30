@@ -303,3 +303,52 @@ body.light{
     }
   }
 }
+.announcer-window{
+  position: relative;
+  color: white;
+  h2, h3{
+    font-weight: bold;
+  }
+  h2{
+    font-size: 2.5em;
+  }
+  h3{
+    font-size: 2em;
+  }
+  font-size: 1.5em;
+  & > div{
+    position: absolute;
+    top: 8%;
+    background-color: rgba(128, 128, 128, 0.3);
+    padding: 0.5% 1%;
+  }
+  .program-info{
+    left: 10%;
+    max-width: 40%;
+    b:before{
+      content: '【';
+    }
+    b:after{
+      content: '】';
+    }
+  }
+  .song-info{
+    right: 10%;
+    max-width: 40%;
+    dl{
+      dt, dd{
+        float: left;
+      }
+      dt{
+        width: 4em;
+        clear: left;
+      }
+    }
+  }
+}
+#preview .announcer-window{
+  font-size: 1em;
+  h2, h3{
+    font-size: 1.5em;
+  }
+}
