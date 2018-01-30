@@ -6,10 +6,10 @@ const express = require('express'),
 router.get('/:channel', function(req, res) {
     const server = config.get('program'), channel = req.params['channel'] || "default",
         request = require('request-promise-native'), fs = require('fs'), path = require('path'), api = require('../lib/api');
-    const cacheFile = path.join(__dirname, 'public', 'cache', `${channel}.json`), cacheUrl = `/cache/${channel}.json`;
+    const cacheFile = path.join(__dirname, '..', 'public', 'cache', `${channel}.json`), cacheUrl = `/cache/${channel}.json`;
     const debug = require('debug')('webpa:program');
     const saveCache = (data, cb) => {
-        if(data) fs.writeFile(cacheFile, data, cb);
+        if(data) fs.writeFile(cacheFile, JSON.stringify(data), cb);
         res.set('Content-Type', 'application/json');
         res.send(data);
     };
