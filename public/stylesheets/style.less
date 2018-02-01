@@ -365,3 +365,32 @@ body.light{
     font-size: 1.5em;
   }
 }
+.shake-roll-overlay{
+  font-size: 1.5em;
+  color: #0f0f0f;
+  background: rgba(220, 220, 220, 0.8);
+  padding-top: 5%;
+  .shakers{
+    width: 80%;
+    border: 2px dotted orangered;
+    margin: 0 auto;
+    border-radius: 5px;
+    height: 80%;
+    padding: 20px;
+    img{
+      margin: 5px;
+      border-radius: 25%;
+      transition: opacity 1s ease-in;
+      &.selected{
+        border: orangered 2px solid;
+        opacity: 1;
+      }
+    }
+  }
+  .result{
+    padding: 1em;
+    text-align: center;
+    color: orangered;
+    font-weight: bold;
+  }
+}

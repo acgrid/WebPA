@@ -21,6 +21,7 @@ const Monitor = require('./lib/monitor'),
     Reorder = require('./plugins/reorder'),
     Announcer = require('./plugins/announcer'),
     Shaker = require('./plugins/shake'),
+    ShakeRoller = require('./plugins/shake-roll'),
     $ = require('jquery');
 
 if(typeof HTMLMediaElement.prototype.playing === 'undefined') Object.defineProperty(HTMLMediaElement.prototype, 'playing', {
@@ -42,6 +43,7 @@ $.fn.extend({
 $(function(){
     const $body = $("body"),
         channel = $body.data("channel") || 'default',
+        shaker = new Shaker(),
         plugins = [
             new Bridge(),
             new Locker(),
@@ -57,7 +59,8 @@ $(function(){
             //new Judgement(),
             new Roller(),
             new Announcer(),
-            new Shaker(),
+            shaker,
+            new ShakeRoller(shaker),
             //new LightBoard(),
 
         ], debug = !!$body.data("debug");
