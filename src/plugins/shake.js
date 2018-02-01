@@ -51,15 +51,16 @@ class Shake extends DOMPlugin{
             event.on('plugin.program.execute', (program) => {
                 if(program.id && PROGRAM_TYPES.indexOf(program.id.slice(0, 1)) !== -1){
                     this.program = program.id;
+                    this.selfUpdate = this.program !== 'Z';
                     this.request(`set/${this.program}`).then(() => {
-                        this.event.emit(SANDBOX_SHAKE_ON, {initial: true});
+                        if(this.selfUpdate) this.event.emit(SANDBOX_SHAKE_ON, {initial: true});
                     });
                 }
             });
             event.on('plugin.program.finish', () => {
                 if(this.program){
                     this.program = null;
-                    this.event.emit(SANDBOX_SHAKE_OFF, {initial: true});
+                    if(this.selfUpdate) this.event.emit(SANDBOX_SHAKE_OFF, {initial: true});
                 }
                 this.request('unset');
             });
@@ -82,7 +83,7 @@ class Shake extends DOMPlugin{
         });
     }
     update(){
-        if(this.program) this.request(`counter/${this.program}`).then((counter) => {
+        if(this.program && this.selfUpdate) this.request(`counter/${this.program}`).then((counter) => {
             this.counters[this.program] = counter;
             this.event.emit(SANDBOX_SHAKE_UPDATE, {initial: true, total: counter});
         });
