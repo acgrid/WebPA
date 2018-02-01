@@ -13,13 +13,14 @@ const Monitor = require('./lib/monitor'),
     Camera = require('./plugins/carema'),
     MediaManager = require('./plugins/file-manager'),
     ProgramManager = require('./plugins/program-manager'),
-    Judgement = require('./plugins/guest-judgement'),
+    //Judgement = require('./plugins/guest-judgement'),
     Roller = require('./plugins/roll'),
     Locker = require('./plugins/locker'),
-    LightBoard = require('./plugins/light-board'),
+    //LightBoard = require('./plugins/light-board'),
     Images = require('./plugins/image'),
     Reorder = require('./plugins/reorder'),
     Announcer = require('./plugins/announcer'),
+    Shaker = require('./plugins/shake'),
     $ = require('jquery');
 
 if(typeof HTMLMediaElement.prototype.playing === 'undefined') Object.defineProperty(HTMLMediaElement.prototype, 'playing', {
@@ -56,7 +57,8 @@ $(function(){
             //new Judgement(),
             new Roller(),
             new Announcer(),
-            new LightBoard(),
+            new Shaker(),
+            //new LightBoard(),
 
         ], debug = !!$body.data("debug");
     let role = $body.data('role'), main;
