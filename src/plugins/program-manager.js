@@ -54,11 +54,13 @@ module.exports = class ProgramManager extends Plugin{
         $button.prop("disabled", true);
         const control = $button.closest(".control").data("control");
         if(control){
+            this.currentControl = control;
             this.event.emit('plugin.program.execute', $button.closest('.program-entry').data('program')); // LOCAL EVENT
             if(Array.isArray(control.start)) this.emitActions(control.start);
             if(control.listen) {
                 this.event.emit("debug", `Register stop listener: ${control.listen}`);
                 this.event.once(control.listen, () => {
+                    this.currentControl = null;
                     this.unlock();
                     this.event.emit('plugin.program.finish');
                     if(Array.isArray(control.stop) && control.stop.length) this.emitActions(control.stop);
@@ -84,10 +86,6 @@ module.exports = class ProgramManager extends Plugin{
             program.control.listen = 'promise.plugin.video.stopped';
             return; // Skip image & audio if video is found
         }
-        if(program.files.image){
-            program.control.start.push({event: "global.plugin.background.update", data: {url: program.files.image}});
-            if(program.files.video || program.files.audio) program.control.stop.push({event: "global.plugin.background.pop"});
-        }
         if(program.files.audio){
             if(program.files.audio.indexOf('LOOP') !== -1){
                 program.control.start.push({event: "global.plugin.audio.loop", data: {loop: true}});
@@ -96,12 +94,17 @@ module.exports = class ProgramManager extends Plugin{
             program.control.start.push({event: "global.plugin.audio.open", data: {url: program.files.audio}});
             program.control.listen = 'promise.plugin.audio.stopped';
         }
+        if(program.files.image){ // Make me after audio and video
+            program.control.start.push({event: "global.plugin.background.update", data: {url: program.files.image}});
+            if(program.files.video || program.files.audio) program.control.stop.push({event: "global.plugin.background.pop"});
+        }
     }
     init(type, main, event) {
         const that = this;
         this.main = main;
         this.event = event;
         this.sessions = new Set();
+        this.currentControl = null;
         if(type === 'console'){
             this.locked = false;
             this.$musicStart = $('<b></b>');
@@ -211,6 +214,18 @@ module.exports = class ProgramManager extends Plugin{
                         className: 'btn btn-success',
                         action: () => {
                             this.unlock();
+                        }
+                    },
+                    {
+                        text: '<i class="fa fa-fw fa-hand-paper"></i>',
+                        titleAttr: '终止',
+                        className: 'btn btn-danger',
+                        action: () => {
+                            if(this.currentControl){
+                                this.event.emit('global.plugin.video.stop');
+                                this.event.emit('global.plugin.audio.stop');
+                                if(this.currentControl.listen) this.event.emit(this.currentControl.listen);
+                            }
                         }
                     }
                 ],
