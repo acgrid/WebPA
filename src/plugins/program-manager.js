@@ -222,8 +222,8 @@ module.exports = class ProgramManager extends Plugin{
                         className: 'btn btn-danger',
                         action: () => {
                             if(this.currentControl){
-                                this.event.emit('global.plugin.video.stop');
-                                this.event.emit('global.plugin.audio.stop');
+                                this.event.emit('global.plugin.video.stop', {initial: true});
+                                this.event.emit('global.plugin.audio.stop', {initial: true});
                                 if(this.currentControl.listen) this.event.emit(this.currentControl.listen);
                             }
                         }
