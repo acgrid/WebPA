@@ -287,6 +287,9 @@ module.exports = class ProgramManager extends Plugin{
                                             if(song[field][lang]) $songItems.append(this.$dd.clone().attr("lang", lang).text(song[field][lang]));
                                         });
                                     }
+                                }else{
+                                    addTitle();
+                                    $songItems.append(this.$dd.clone().text(field === 'T' ? Time.secondsToMS(song[field]) : song[field]));
                                 }
                             }
                         });
