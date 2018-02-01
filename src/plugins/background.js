@@ -51,6 +51,7 @@ class Background extends DOM{
             event.on(EVENT_GLOBAL_UPDATE_URL, (data) => {
                 const url = data.url || "";
                 this.$url.val(url);
+                if(data.initial) this.stack.push(url);
                 Storage.set(STORAGE_BACKGROUND_URL, url);
                 event.emit(EVENT_SANDBOX_UPDATE_URL, data);
             });
@@ -94,7 +95,6 @@ class Background extends DOM{
         }
     }
     setUrl(url, initial = true){
-        if(initial) this.stack.push(url);
         this.event.emit(EVENT_GLOBAL_UPDATE_URL, {url, initial});
     }
     hide(initial = true){
