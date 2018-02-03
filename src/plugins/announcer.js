@@ -32,6 +32,7 @@ function isNonEmptyArray(value){
 
 function setMultilingual(data, $original, $translated){
     const keys = Object.keys(data);
+    $translated.text('');
     if(keys.length === 1 && keys[0] === LANG_TRANSLATED){
         setLangText($original, LANG_TRANSLATED, data[LANG_TRANSLATED]);
     }else{
