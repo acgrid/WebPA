@@ -185,7 +185,6 @@ module.exports = class Announcer extends DOMPlugin{
                             this.songTimers.push(TIMER_MAIN_OFFSET + index * TIMER_SONG_DURATION);
                         }
                     });
-                    console.log(this.songTimers);
                 }
             });
             event.on('plugin.program.finish', () => {
