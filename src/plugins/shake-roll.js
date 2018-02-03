@@ -52,8 +52,9 @@ class ShakeRoller extends DOMPlugin{
             this.$shakers.empty();
             this.$dom.removeClass("hidden");
         });
-        event.on(EVENT_SANDBOX_START, () => {
+        event.on(EVENT_SANDBOX_START, (data) => {
             this.sync();
+            this.countdown(data.run);
         });
         event.on(EVENT_SANDBOX_UPDATE, (data) => {
             const shakers = data.shakers, sidList = Object.keys(shakers);
@@ -127,7 +128,7 @@ class ShakeRoller extends DOMPlugin{
                 this.state = RunState;
                 this.$run.prop("disabled", true);
                 this.shake.request(`set/${PROGRAM}`).then(() => {
-                    this.event.emit(EVENT_SANDBOX_START, {initial: true});
+                    this.event.emit(EVENT_SANDBOX_START, {initial: true, run});
                     setTimeout(() => {
                         if(this.state === RunState){
                             this.shake.request('unset').then(() => {
