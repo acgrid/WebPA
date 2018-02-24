@@ -250,6 +250,7 @@ module.exports = class ProgramManager extends Plugin{
                 },
                 createdRow: (row, data) => {
                     data.program.id = data._id;
+                    data.program.index = data.index;
                     $(row).addClass("program-entry").data("program", data.program);
                 },
                 dom: 'Bfrtip',
