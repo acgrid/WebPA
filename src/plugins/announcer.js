@@ -100,8 +100,10 @@ module.exports = class Announcer extends DOMPlugin{
             this.$name.text(packet.name);
             this.$summary.text(packet.summary);
             this.$performers.text(packet.performers.join(' '));
-            if(this.$program.hasClass("hidden")) this.$program.removeClass("hidden");
-            this.$program.animateCss("bounceInLeft");
+            if(this.$program.hasClass("hidden")){
+                this.$program.removeClass("hidden");
+                this.$program.animateCss("bounceInLeft");
+            }
         });
         event.on(SANDBOX_ANNOUNCER_SONG, (song) => {
             setMultilingual(song.N, this.$originalTitle, this.$translatedTitle);
@@ -128,8 +130,10 @@ module.exports = class Announcer extends DOMPlugin{
                     }
                 }
             });
-            if(this.$song.hasClass("hidden")) this.$song.removeClass("hidden");
-            this.$song.animateCss("bounceInRight");
+            if(this.$song.hasClass("hidden")){
+                this.$song.removeClass("hidden");
+                this.$song.animateCss("bounceInRight");
+            }
         });
         event.on(SANDBOX_ANNOUNCER_PROGRAM_HIDE, () => {
             this.$program.animateCss("bounceOut", () => {
