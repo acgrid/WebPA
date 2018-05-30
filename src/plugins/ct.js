@@ -7,7 +7,7 @@ function update(index){
     $.get("https://www.comitime.com/wechat/app/danmaku/client", {key: KEY, action: "live", index});
 }
 
-class LightBoard extends Plugin{
+class SyncComiTime extends Plugin{
     static name(){
         return 'ct';
     }
@@ -25,4 +25,4 @@ class LightBoard extends Plugin{
     }
 }
 
-module.exports = LightBoard;
+module.exports = SyncComiTime;
