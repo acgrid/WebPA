@@ -23,7 +23,7 @@ module.exports = class FileManager extends Plugin{
                 return {
                     file,
                     url: json.prefix + file,
-                    extension: file.substr(file.lastIndexOf('.') + 1)
+                    extension: file.substr(file.lastIndexOf('.') + 1).toLowerCase()
                 };
             });
         }else{
@@ -77,7 +77,7 @@ module.exports = class FileManager extends Plugin{
                     }}
                 ],
                 createdRow: (row, data) => {
-                    $(row).addClass("file-entry").data("url", data.url);
+                    $(row).addClass("file-entry").data("file", data.file).data("url", data.url);
                 },
                 dom: 'Bfrtip',
             });
@@ -98,7 +98,11 @@ module.exports = class FileManager extends Plugin{
             });
             event.on("plugin.media.match", (regexp, callback) => {
                 let matchedFiles = this.files.filter(entry => {
-                    return regexp.test(entry.file);
+                    if(regexp instanceof RegExp){
+                        return regexp.test(entry.file);
+                    }else{
+                        return entry.file.indexOf(regexp) === 0;
+                    }
                 });
                 if(matchedFiles.length) callback(matchedFiles);
             });

@@ -68,6 +68,7 @@ class AudioPlayer extends DOMPlugin{
             this.audio.loop = false;
             this.audio.pause();
             this.audio.currentTime = 0;
+            event.emit(EVENT_MONITOR_AUDIO_STOPPED);
         });
         event.on(EVENT_SANDBOX_AUDIO_SEEK, (data) => {
             if(data.time) this.audio.currentTime = data.time;
@@ -236,7 +237,18 @@ class AudioPlayer extends DOMPlugin{
     }
     setUrlFromDOM(ev){
         this.event.emit('global.plugin.video.stop', {initial: true});
-        this.open($(ev.target).closest(".file-entry").data("url"));
+        const $entry = $(ev.target).closest(".file-entry");
+        this.open($entry.data("url"));
+        this.event.emit("plugin.media.match", $entry.data("file").replace(/\.\w+$/, ''), files => {
+            files.forEach(file => {
+                if(['png', 'jpg', 'jpeg', 'gif'].indexOf(file.extension) >= 0){
+                    this.event.emit("global.plugin.background.update", {url: file.url, initial: true});
+                    this.event.once(EVENT_MONITOR_AUDIO_STOPPED, () => {
+                        this.event.emit("global.plugin.background.pop", {initial: true});
+                    });
+                }
+            });
+        });
     }
     setFileOperation($cell){
         const $button = $('<button class="btn btn-primary btn-sm"><i class="fa fa-fw fa-play"></i></button>');
