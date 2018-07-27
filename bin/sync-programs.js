@@ -18,7 +18,7 @@ if(Array.isArray(args['activities'])) args['activities'].forEach(activity => {
                 api(`live/program/${programId}/${fileType}`).then(file => {
                     if(file && typeof file === 'object' && file['source_url'] && file['sha']){
                         const sha1 = file['sha'];
-                        const newFileName = `${meta._id} ${meta.name}.${meta[fileType]}`.replace(/[|\\\/:<>!?*]/g, "_");
+                        const newFileName = `${meta._id} ${meta.name}.${meta[fileType]}`.replace(/[|\\\/:<>!?*,]/g, "_");
                         if(hashMap.hasOwnProperty(sha1)){
                             const oldFileName = hashMap[sha1];
                             debug(`Found identical ${fileType} file ${sha1} of ${programId}`);
